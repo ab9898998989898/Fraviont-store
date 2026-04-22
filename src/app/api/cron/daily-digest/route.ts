@@ -6,13 +6,9 @@ import { callAI } from "@/lib/ai/client";
 import { buildDailyDigestPrompt } from "@/lib/ai/prompts";
 import { redis } from "@/lib/redis/client";
 
-export async function POST(req: NextRequest) {
-  // Verify cron secret
-  const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 
+async function handler(req: NextRequest) {
   try {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -52,3 +48,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to generate digest" }, { status: 500 });
   }
 }
+
+export const POST = verifySignatureAppRouter(handler);

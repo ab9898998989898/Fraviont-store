@@ -7,12 +7,9 @@ import { AbandonedCart } from "@/lib/email/templates/AbandonedCart";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 
+async function handler(req: NextRequest) {
   try {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 
@@ -55,3 +52,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to process abandoned carts" }, { status: 500 });
   }
 }
+
+export const POST = verifySignatureAppRouter(handler);
