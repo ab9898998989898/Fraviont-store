@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -18,14 +18,16 @@ type OrderStatus =
   | "cancelled"
   | "refunded";
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
+export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const { id } = use(params);
+
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus>("pending");
   const [trackingNumber, setTrackingNumber] = useState("");
   const [noteInput, setNoteInput] = useState("");
 
   const { data: order, isPending, isError, refetch } = api.orders.getById.useQuery({
-    id: params.id,
+    id,
   });
 
   const updateStatusMutation = api.orders.updateStatus.useMutation({
@@ -49,7 +51,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   const handleStatusUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     updateStatusMutation.mutate({
-      id: params.id,
+      id,
       status: selectedStatus,
       trackingNumber: trackingNumber || undefined,
     });
@@ -61,7 +63,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       return;
     }
     addNoteMutation.mutate({
-      id: params.id,
+      id,
       note: noteInput,
     });
   };

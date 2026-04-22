@@ -1,17 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { use } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { api } from "@/trpc/react";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 
-export default function CustomerDetailPage({ params }: { params: { id: string } }) {
+export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const { id } = use(params);
 
   const { data: customer, isPending, isError, refetch } = api.customers.getById.useQuery({
-    id: params.id,
+    id,
   });
 
   // Loading state
