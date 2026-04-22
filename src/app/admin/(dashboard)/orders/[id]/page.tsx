@@ -178,19 +178,19 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           <div className="flex justify-between">
             <span className="text-parchment text-sm font-sans">Subtotal</span>
             <span className="text-ivory text-sm font-sans">
-              {formatPrice(order.subtotal)}
+              {formatPrice(order.subtotal ?? 0)}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-parchment text-sm font-sans">Shipping</span>
             <span className="text-ivory text-sm font-sans">
-              {formatPrice(order.shippingTotal)}
+              {formatPrice(order.shippingTotal ?? 0)}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-parchment text-sm font-sans">Tax</span>
             <span className="text-ivory text-sm font-sans">
-              {formatPrice(order.taxTotal)}
+              {formatPrice(order.taxTotal ?? 0)}
             </span>
           </div>
           <div className="flex justify-between border-t border-iron pt-2">
