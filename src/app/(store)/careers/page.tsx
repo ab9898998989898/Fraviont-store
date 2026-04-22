@@ -73,7 +73,7 @@ export default function CareersPage() {
           <Briefcase size={32} className="text-gold-warm mx-auto mb-6 opacity-60" />
           <h2 className="font-display text-ivory text-3xl font-light mb-4">There are currently no open positions</h2>
           <p className="text-parchment font-sans font-light text-sm max-w-lg mx-auto mb-8">
-            We are deeply flattered by your interest. While we aren't hiring right now, we are always
+            We are deeply flattered by your interest. While we aren&apos;t hiring right now, we are always
             building our network of extraordinary talent for future expansion.
           </p>
           <Link
