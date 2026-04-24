@@ -3,7 +3,7 @@ import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 import { db } from "@/server/db";
 import { journals } from "@/server/db/schema";
 
-async function handler(request: Request) {
+async function handler() {
   try {
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
@@ -40,7 +40,7 @@ async function handler(request: Request) {
     try {
       const cleanJson = contentText.replace(/```json\n?|\n?```/g, "").trim();
       parsed = JSON.parse(cleanJson);
-    } catch (e) {
+    } catch {
       return NextResponse.json({ error: "Failed to parse Groq response", raw: contentText }, { status: 500 });
     }
 
@@ -57,8 +57,9 @@ async function handler(request: Request) {
     }).returning();
 
     return NextResponse.json({ success: true, journal: result[0] });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const errMessage = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: errMessage }, { status: 500 });
   }
 }
 
