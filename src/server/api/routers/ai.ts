@@ -64,6 +64,28 @@ export const aiRouter = createTRPCRouter({
       return result;
     }),
 
+  generateSEO: adminProcedure
+    .input(z.object({ name: z.string(), description: z.string().optional(), ingredients: z.string().optional() }))
+    .mutation(async ({ input }) => {
+      const systemPrompt = `You are an expert SEO copywriter for a high-end luxury e-commerce site. Write a meta title (max 60 chars) and meta description (max 160 chars). Return ONLY valid JSON in format: {"metaTitle": "Title", "metaDescription": "Description"}. Do not include markdown blocks.`;
+      
+      const raw = await callAI({
+        model: "openai/gpt-4o",
+        system: systemPrompt,
+        messages: [{ role: "user", content: `Product Name: ${input.name}\nDesc: ${input.description}\nIngredients: ${input.ingredients}` }],
+        apiKey: process.env.OPENROUTER2_API_KEY,
+        max_tokens: 300,
+      });
+
+      try {
+        const cleanJson = raw.replace(/```json\n?|\n?```/g, "");
+        return JSON.parse(cleanJson) as { metaTitle: string, metaDescription: string };
+      } catch (err) {
+        console.error("Failed to parse SEO JSON:", err);
+        return { metaTitle: "", metaDescription: "" };
+      }
+    }),
+
   generateProfile: publicProcedure
     .input(
       z.object({

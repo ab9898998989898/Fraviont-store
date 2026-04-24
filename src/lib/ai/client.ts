@@ -4,6 +4,7 @@ interface AICallOptions {
   system?: string;
   temperature?: number;
   max_tokens?: number;
+  apiKey?: string;
 }
 
 export async function callAI({
@@ -12,15 +13,18 @@ export async function callAI({
   system,
   temperature = 0.7,
   max_tokens = 1000,
+  apiKey,
 }: AICallOptions): Promise<string> {
   const allMessages = system
     ? [{ role: "system" as const, content: system }, ...messages]
     : messages;
 
+  const keyToUse = apiKey || process.env.OPENROUTER_API_KEY;
+
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      Authorization: `Bearer ${keyToUse}`,
       "HTTP-Referer": process.env.NEXTAUTH_URL ?? "http://localhost:3000",
       "X-Title": "Fraviont",
       "Content-Type": "application/json",

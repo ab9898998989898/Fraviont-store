@@ -130,6 +130,15 @@ export function ProductForm({ product }: ProductFormProps) {
     onError: (e) => toast.error(e.message),
   });
 
+  const generateSEOMutation = api.ai.generateSEO.useMutation({
+    onSuccess: (data) => {
+      if (data.metaTitle) setValue("metaTitle", data.metaTitle);
+      if (data.metaDescription) setValue("metaDescription", data.metaDescription);
+      toast.success("SEO generated");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   async function onSubmit(data: ProductFormData) {
     if (product) {
       await updateMutation.mutateAsync({ id: product.id, ...data });
@@ -366,6 +375,21 @@ export function ProductForm({ product }: ProductFormProps) {
       {/* SEO */}
       {activeTab === "seo" && (
         <div className="space-y-4">
+          <div className="flex justify-end mb-2">
+            <button
+              type="button"
+              onClick={() => generateSEOMutation.mutate({ 
+                name: watch("name"), 
+                description: watch("description") || "",
+                ingredients: watch("ingredients") || ""
+              })}
+              disabled={generateSEOMutation.isPending || !watch("name")}
+              className="flex items-center gap-2 text-gold-warm text-xs tracking-[0.14em] uppercase font-sans hover:text-gold-bright transition-colors disabled:opacity-50"
+            >
+              {generateSEOMutation.isPending && <Loader2 size={12} className="animate-spin" />}
+              Generate AI SEO
+            </button>
+          </div>
           <div>
             <label className={labelClass}>Meta Title</label>
             <input {...register("metaTitle")} className={inputClass} placeholder="SEO title" />

@@ -181,6 +181,20 @@ export const inventoryLogs = pgTable("inventory_logs", {
   createdAt:      timestamp("created_at").defaultNow(),
 });
 
+export const journals = pgTable("journals", {
+  id:        uuid("id").primaryKey().defaultRandom(),
+  slug:      text("slug").unique().notNull(),
+  title:     text("title").notNull(),
+  excerpt:   text("excerpt").notNull(),
+  content:   text("content").notNull(),
+  category:  text("category").notNull(),
+  readTime:  text("read_time").notNull(),
+  imageUrl:  text("image_url"),
+  isFeatured: boolean("is_featured").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
+});
+
 // ─── TypeScript Types ─────────────────────────────────────────────────────────
 
 export type ScentNotes = {
