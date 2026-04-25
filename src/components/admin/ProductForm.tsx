@@ -344,6 +344,7 @@ export function ProductForm({ product }: ProductFormProps) {
               ))}
             </div>
           )}
+          </div>
         </div>
       )}
 
