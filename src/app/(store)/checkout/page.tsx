@@ -16,6 +16,7 @@ const CheckoutFormSchema = z.object({
   city: z.string().min(1, "City required"),
   province: z.string().min(1, "Province required"),
   postalCode: z.string().min(4, "Postal code required"),
+  paymentMethod: z.enum(["payfast", "cod"]).default("payfast"),
 });
 
 type CheckoutFormData = z.infer<typeof CheckoutFormSchema>;
@@ -45,9 +46,13 @@ export default function CheckoutPage() {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(CheckoutFormSchema),
+    defaultValues: { paymentMethod: "payfast" },
   });
+
+  const paymentMethod = watch("paymentMethod");
 
   async function onSubmit(data: CheckoutFormData) {
     if (items.length === 0) return;
@@ -79,6 +84,7 @@ export default function CheckoutPage() {
             unitPrice: item.price,
             image: item.image,
           })),
+          paymentMethod: data.paymentMethod,
         }),
       });
 
@@ -88,8 +94,14 @@ export default function CheckoutPage() {
         actionUrl: string;
         fields: Record<string, string>;
       };
+      
       clearCart();
-      redirectToPayFast(actionUrl, fields);
+
+      if (actionUrl === "/checkout/success") {
+        window.location.href = actionUrl;
+      } else {
+        redirectToPayFast(actionUrl, fields);
+      }
     } catch {
       setError("Something went wrong. Please try again.");
       setIsSubmitting(false);
@@ -212,6 +224,32 @@ export default function CheckoutPage() {
             )}
           </div>
 
+          <div className="space-y-4">
+            <h2 className="text-ivory text-xs tracking-[0.14em] uppercase font-sans">
+              Payment Method
+            </h2>
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="payfast"
+                  {...register("paymentMethod")}
+                  className="accent-gold-warm"
+                />
+                <span className="text-parchment text-sm font-sans">PayFast (Credit/Debit Card)</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="cod"
+                  {...register("paymentMethod")}
+                  className="accent-gold-warm"
+                />
+                <span className="text-parchment text-sm font-sans">Cash on Delivery</span>
+              </label>
+            </div>
+          </div>
+
           {error && (
             <p className="text-crimson text-sm font-sans border border-crimson/30 px-4 py-3">
               {error}
@@ -225,7 +263,9 @@ export default function CheckoutPage() {
           >
             {isSubmitting
               ? "Processing..."
-              : `Pay ${formatPrice(total)} with PayFast`}
+              : paymentMethod === "payfast" 
+                ? `Pay ${formatPrice(total)} with PayFast`
+                : `Complete Order (${formatPrice(total)})`}
           </button>
         </form>
 

@@ -25,16 +25,33 @@ const NAV_ITEMS = [
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({
+  mobileMenuOpen,
+  setMobileMenuOpen,
+}: {
+  mobileMenuOpen?: boolean;
+  setMobileMenuOpen?: (open: boolean) => void;
+}) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <aside
-      className="flex-shrink-0 flex flex-col bg-[#111111] border-r border-[#1E1E1E] transition-all duration-300"
-      style={{ width: collapsed ? 64 : 240 }}
-    >
-      {/* Brand */}
+    <>
+      {/* Mobile overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-40 md:hidden" 
+          onClick={() => setMobileMenuOpen?.(false)} 
+        />
+      )}
+      
+      <aside
+        className={`fixed md:relative inset-y-0 left-0 z-50 flex-shrink-0 flex flex-col bg-[#111111] border-r border-[#1E1E1E] transition-all duration-300 transform ${
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+        style={{ width: collapsed ? 64 : 240 }}
+      >
+        {/* Brand */}
       <div className="flex items-center justify-between px-4 py-5 border-b border-[#1E1E1E]">
         {!collapsed && (
           <div>
@@ -77,5 +94,6 @@ export function AdminSidebar() {
         })}
       </nav>
     </aside>
+    </>
   );
 }

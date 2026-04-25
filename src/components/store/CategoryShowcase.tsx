@@ -11,19 +11,19 @@ const CATEGORIES = [
     label: "PERFUMES",
     description: "Olfactory art for the senses",
     href: "/shop?category=perfumes",
-    gradient: "from-[#1a1208] to-[#0a0a0a]",
+    image: "/category_perfumes.png",
   },
   {
     label: "COSMETICS",
     description: "Ritual beauty, elevated",
     href: "/shop?category=cosmetics",
-    gradient: "from-[#0d1218] to-[#0a0a0a]",
+    image: "/category_cosmetics.png",
   },
   {
     label: "JEWELRY",
     description: "Adornment as expression",
     href: "/shop?category=jewelry",
-    gradient: "from-[#12100a] to-[#0a0a0a]",
+    image: "/category_jewelry.png",
   },
 ];
 
@@ -51,11 +51,15 @@ export function CategoryShowcase() {
               ref={(el) => {
                 if (el) cardRefs.current[i] = el;
               }}
-              className={`group relative aspect-[3/4] bg-gradient-to-b ${cat.gradient} border border-iron overflow-hidden cursor-pointer`}
+              className={`group relative aspect-[3/4] border border-iron overflow-hidden cursor-pointer`}
             >
-              <div className="card-image absolute inset-0 bg-gradient-to-b from-transparent to-charcoal/60" />
+              <div 
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" 
+                style={{ backgroundImage: `url(${cat.image})` }} 
+              />
+              <div className="card-image absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-charcoal/80" />
               <div className="card-overlay absolute inset-0 bg-gold-glow opacity-0" />
-              <div className="card-info absolute bottom-0 left-0 right-0 p-8">
+              <div className="card-info absolute bottom-0 left-0 right-0 p-8 z-10">
                 <p className="text-ash text-xs tracking-[0.2em] uppercase font-sans mb-2">
                   {cat.description}
                 </p>

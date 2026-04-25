@@ -195,6 +195,22 @@ export const journals = pgTable("journals", {
   updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
 });
 
+// ─── Settings ───────────────────────────────────────────────────────────────────
+
+export const storeSettings = pgTable("store_settings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  storeName: text("store_name").notNull().default("Fraviont"),
+  storeTagline: text("store_tagline").notNull().default("The Art of Presence"),
+  contactEmail: text("contact_email").notNull().default("hello@fraviont.com"),
+  currency: text("currency").notNull().default("ZAR"),
+  orderAlerts: boolean("order_alerts").notNull().default(true),
+  lowStockAlerts: boolean("low_stock_alerts").notNull().default(true),
+  returnRequests: boolean("return_requests").notNull().default(true),
+  customerSignups: boolean("customer_signups").notNull().default(false),
+  weeklyDigest: boolean("weekly_digest").notNull().default(true),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
+});
+
 // ─── TypeScript Types ─────────────────────────────────────────────────────────
 
 export type ScentNotes = {

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Store, Lock, Bell, Save, Eye, EyeOff, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Store, Lock, Bell, Save, Eye, EyeOff, Check, Loader2 } from "lucide-react";
+import { api } from "@/trpc/react";
+import toast from "react-hot-toast";
 
 const inputClass =
   "w-full bg-transparent border border-[#2A2A2A] text-ivory text-sm font-sans font-light px-4 py-3 placeholder:text-ash focus:outline-none focus:border-gold-antique transition-colors";
@@ -45,19 +47,23 @@ function ToggleSwitch({
 }
 
 export default function AdminSettingsPage() {
+  const { data: settings, isLoading } = api.settings.get.useQuery();
+  const updateSettings = api.settings.update.useMutation({
+    onSuccess: () => {
+      setStoreSaved(true);
+      toast.success("Settings saved successfully");
+      setTimeout(() => setStoreSaved(false), 2500);
+    },
+    onError: (e) => {
+      toast.error(e.message || "Failed to save settings");
+    }
+  });
+
   // Store Info
   const [storeName, setStoreName] = useState("Fraviont");
   const [storeEmail, setStoreEmail] = useState("hello@fraviont.com");
   const [currency, setCurrency] = useState("ZAR");
   const [storeTagline, setStoreTagline] = useState("The Art of Presence");
-
-  // Password change
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPasswords, setShowPasswords] = useState(false);
-  const [passwordError, setPasswordError] = useState("");
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
 
   // Notification preferences
   const [orderAlerts, setOrderAlerts] = useState(true);
@@ -66,13 +72,45 @@ export default function AdminSettingsPage() {
   const [customerSignups, setCustomerSignups] = useState(false);
   const [returnRequests, setReturnRequests] = useState(true);
 
+  // Initialize state from DB
+  useEffect(() => {
+    if (settings) {
+      setStoreName(settings.storeName);
+      setStoreEmail(settings.contactEmail);
+      setCurrency(settings.currency);
+      setStoreTagline(settings.storeTagline);
+      setOrderAlerts(settings.orderAlerts);
+      setLowStockAlerts(settings.lowStockAlerts);
+      setWeeklyDigest(settings.weeklyDigest);
+      setCustomerSignups(settings.customerSignups);
+      setReturnRequests(settings.returnRequests);
+    }
+  }, [settings]);
+
+  // Password change (Local stub)
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasswords, setShowPasswords] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+
   // Save states
   const [storeSaved, setStoreSaved] = useState(false);
 
   function handleStoreSave(e: React.FormEvent) {
     e.preventDefault();
-    setStoreSaved(true);
-    setTimeout(() => setStoreSaved(false), 2500);
+    updateSettings.mutate({
+      storeName,
+      storeTagline,
+      contactEmail: storeEmail,
+      currency,
+      orderAlerts,
+      lowStockAlerts,
+      returnRequests,
+      customerSignups,
+      weeklyDigest,
+    });
   }
 
   function handlePasswordChange(e: React.FormEvent) {
@@ -105,7 +143,12 @@ export default function AdminSettingsPage() {
         Manage your store configuration, account security, and notification
         preferences.
       </p>
-
+      
+      {isLoading ? (
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="animate-spin text-gold-warm" />
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* ─── Store Information ────────────────────────────────────────── */}
         <div className={cardClass}>
@@ -313,6 +356,7 @@ export default function AdminSettingsPage() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

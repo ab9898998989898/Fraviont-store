@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { ChevronDown, LogOut, User } from "lucide-react";
+import { ChevronDown, LogOut, User, Menu } from "lucide-react";
 import { useState } from "react";
 
 const PAGE_TITLES: Record<string, string> = {
@@ -15,7 +15,11 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/settings": "Settings",
 };
 
-export function AdminHeader() {
+export function AdminHeader({
+  setMobileMenuOpen,
+}: {
+  setMobileMenuOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const pathname = usePathname();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -24,10 +28,18 @@ export function AdminHeader() {
     "Admin";
 
   return (
-    <header className="h-16 bg-[#111111] border-b border-[#1E1E1E] flex items-center justify-between px-8 flex-shrink-0">
-      <h1 className="text-ivory text-sm tracking-[0.1em] uppercase font-sans font-medium">
-        {title}
-      </h1>
+    <header className="h-16 bg-[#111111] border-b border-[#1E1E1E] flex items-center justify-between px-4 md:px-8 flex-shrink-0">
+      <div className="flex items-center gap-4">
+        <button 
+          onClick={() => setMobileMenuOpen?.(prev => !prev)}
+          className="text-ash hover:text-ivory transition-colors md:hidden"
+        >
+          <Menu size={20} />
+        </button>
+        <h1 className="text-ivory text-sm tracking-[0.1em] uppercase font-sans font-medium hidden sm:block">
+          {title}
+        </h1>
+      </div>
 
       <div className="relative">
         <button

@@ -25,9 +25,24 @@ const VariantSchema = z.object({
 
 const ProductFormSchema = z.object({
   slug: z.string().min(1, "Slug required"),
-  name: z.string().min(1, "Name required"),
-  shortDescription: z.string().optional(),
-  description: z.string().optional(),
+  name: z
+    .string()
+    .trim()
+    .min(3, "Min 3 characters")
+    .max(100, "Max 100 characters")
+    .regex(/^[a-zA-Z0-9-'\s]+$/, "Letters, numbers, hyphens, apostrophes only"),
+  shortDescription: z
+    .string()
+    .min(10, "Min 10 characters")
+    .max(500, "Max 500 characters")
+    .regex(/^[a-zA-Z0-9\s.,!?'"()\-]+$/, "Alphanumeric and basic punctuation only")
+    .optional(),
+  description: z
+    .string()
+    .min(10, "Min 10 characters")
+    .max(500, "Max 500 characters")
+    .regex(/^[a-zA-Z0-9\s.,!?'"()\-]+$/, "Alphanumeric and basic punctuation only")
+    .optional(),
   price: z.number().int().positive("Price required"),
   compareAtPrice: z.number().int().positive().optional(),
   category: z.enum(["perfumes", "cosmetics", "jewelry", "gift_sets"]),
@@ -191,10 +206,10 @@ export function ProductForm({ product }: ProductFormProps) {
           <div>
             <label className={labelClass}>Category *</label>
             <select {...register("category")} className={inputClass}>
-              <option value="perfumes">Perfumes</option>
-              <option value="cosmetics">Cosmetics</option>
-              <option value="jewelry">Jewelry</option>
-              <option value="gift_sets">Gift Sets</option>
+              <option value="perfumes bg-black">Perfumes</option>
+              <option value="cosmetics bg-black">Cosmetics</option>
+              <option value="jewelry bg-black">Jewelry</option>
+              <option value="gift_sets bg-black">Gift Sets</option>
             </select>
           </div>
           <div>
@@ -232,6 +247,7 @@ export function ProductForm({ product }: ProductFormProps) {
               rows={2}
               placeholder="Brief product summary"
             />
+            {errors.shortDescription && <p className={errorClass}>{errors.shortDescription.message}</p>}
           </div>
           <div className="flex items-center gap-6">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -248,8 +264,49 @@ export function ProductForm({ product }: ProductFormProps) {
 
       {/* Media */}
       {activeTab === "media" && (
-        <div className="space-y-4">
-          <label className={labelClass}>Image URLs (one per line)</label>
+        <div className="space-y-6">
+          <div>
+            <label className={labelClass}>Upload Images</label>
+            <input 
+              type="file" 
+              multiple 
+              accept="image/*" 
+              className={inputClass}
+              onChange={(e) => {
+                const files = e.target.files;
+                if (!files) return;
+                
+                const currentImages = watch("images") ?? [];
+                
+                Array.from(files).forEach((file) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    const base64String = reader.result as string;
+                    setValue("images", [...watch("images"), base64String]);
+                  };
+                  reader.readAsDataURL(file);
+                });
+                
+                // Clear input after processing
+                e.target.value = "";
+              }}
+            />
+            <p className="text-ash text-xs font-sans mt-2">Select files from your computer</p>
+          </div>
+          
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-[#1E1E1E]" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-[#0A0A0A] px-2 text-ash text-xs tracking-[0.14em] uppercase font-sans">
+                OR PASTE LINKS
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>Image URLs (one per line)</label>
           <textarea
             className={inputClass}
             rows={6}
@@ -263,7 +320,30 @@ export function ProductForm({ product }: ProductFormProps) {
             }}
             defaultValue={(watch("images") ?? []).join("\n")}
           />
-          <p className="text-ash text-xs font-sans">Enter one image URL per line</p>
+          <p className="text-ash text-xs font-sans mt-2">Current images: {(watch("images") ?? []).length}</p>
+          
+          {/* Image Preview Area */}
+          {(watch("images") ?? []).length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+              {(watch("images") ?? []).map((img, i) => (
+                <div key={i} className="relative aspect-square border border-iron bg-[#111111]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt={`Preview ${i}`} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newImages = [...watch("images")];
+                      newImages.splice(i, 1);
+                      setValue("images", newImages);
+                    }}
+                    className="absolute top-2 right-2 bg-crimson text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -292,6 +372,7 @@ export function ProductForm({ product }: ProductFormProps) {
             rows={10}
             placeholder="Full product description..."
           />
+          {errors.description && <p className={errorClass}>{errors.description.message}</p>}
           <div>
             <label className={labelClass}>Ingredients / Details</label>
             <textarea

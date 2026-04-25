@@ -30,6 +30,7 @@ const CheckoutSchema = z.object({
       })
     )
     .min(1),
+  paymentMethod: z.enum(["payfast", "cod"]).default("payfast"),
 });
 
 export async function POST(req: NextRequest) {
@@ -81,6 +82,13 @@ export async function POST(req: NextRequest) {
         image: item.image,
       }))
     );
+
+    if (data.paymentMethod === "cod") {
+      return NextResponse.json({ 
+        actionUrl: "/checkout/success", 
+        fields: {} 
+      });
+    }
 
     const { actionUrl, fields } = generatePayFastForm({
       orderId: order.id,
