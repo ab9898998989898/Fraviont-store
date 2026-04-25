@@ -5,23 +5,26 @@ import { journals } from "@/server/db/schema";
 
 async function handler() {
   try {
-    const apiKey = process.env.GROQ_API_KEY;
+    const apiKey = process.env.OPENROUTER2_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: "Missing GROQ_API_KEY" }, { status: 500 });
+      return NextResponse.json({ error: "Missing OPENROUTER2_API_KEY" }, { status: 500 });
     }
 
-    // Call Groq to generate a monthly journal
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    // Call OpenRouter to generate a monthly journal
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+        "X-Title": "Fraviont Store"
       },
       body: JSON.stringify({
-        model: "llama3-8b-8192", 
+        model: "google/gemini-2.5-flash",
+        max_tokens: 2000,
         messages: [{
           role: "system",
-          content: "You are an editorial writer for a high-end luxury e-commerce brand specializing in perfumes, cosmetics, and jewelry. Write a sophisticated, elegant journal article for this month. Return JSON ONLY with keys: title, excerpt, content (HTML formatted paragraphs and headings), category (e.g. Beauty, Fragrance), readTime (e.g. '5 min read'). No markdown code blocks formatting around the output."
+          content: "You are an editorial writer for a high-end luxury e-commerce brand specializing in perfumes, cosmetics, and jewelry. Write a sophisticated, elegant journal article for this month. Return JSON ONLY with keys: title, excerpt, content (HTML formatted paragraphs and headings), category (e.g. Beauty, Fragrance), readTime (e.g. '5 min read'). No markdown code blocks formatting around the output. Only return raw JSON."
         }],
         temperature: 0.7
       })
@@ -29,7 +32,7 @@ async function handler() {
 
     if (!response.ok) {
       const err = await response.text();
-      return NextResponse.json({ error: "Groq API error", details: err }, { status: 500 });
+      return NextResponse.json({ error: "OpenRouter API error", details: err }, { status: 500 });
     }
 
     const data = await response.json();
@@ -41,7 +44,7 @@ async function handler() {
       const cleanJson = contentText.replace(/```json\n?|\n?```/g, "").trim();
       parsed = JSON.parse(cleanJson);
     } catch {
-      return NextResponse.json({ error: "Failed to parse Groq response", raw: contentText }, { status: 500 });
+      return NextResponse.json({ error: "Failed to parse OpenRouter response", raw: contentText }, { status: 500 });
     }
 
     const slug = parsed.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + "-" + Math.floor(Math.random()*1000);
