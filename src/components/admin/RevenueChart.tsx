@@ -8,9 +8,10 @@ import { formatPrice } from "@/lib/utils";
 
 interface RevenueChartProps {
   data: { date: string; revenue: number }[];
+  currency?: string;
 }
 
-export function RevenueChart({ data }: RevenueChartProps) {
+export function RevenueChart({ data, currency = "ZAR" }: RevenueChartProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
@@ -37,7 +38,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
             tick={{ fill: "#7A7470", fontSize: 10 }}
             axisLine={false}
             tickLine={false}
-            tickFormatter={(v: number) => `R${(v / 100).toFixed(0)}`}
+            tickFormatter={(v: number) => formatPrice(v, currency)}
           />
           <Tooltip
             contentStyle={{
@@ -47,7 +48,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
               color: "#F5F0E8",
               fontSize: 12,
             }}
-            formatter={(value: number) => [formatPrice(value), "Revenue"]}
+            formatter={(value: number) => [formatPrice(value, currency), "Revenue"]}
           />
           <Line
             type="monotone"

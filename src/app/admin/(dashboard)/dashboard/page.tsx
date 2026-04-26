@@ -68,7 +68,7 @@ export default function AdminDashboardPage() {
           {/* Two-column layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-6">
-              <RevenueChart data={revenueData ?? []} />
+              <RevenueChart data={revenueData ?? []} currency={settings?.currency} />
               <AIDigestCard />
             </div>
             <div className="space-y-6">

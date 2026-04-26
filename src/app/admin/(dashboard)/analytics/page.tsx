@@ -38,7 +38,7 @@ export default function AdminAnalyticsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("Revenue");
   const [period, setPeriod] = useState<Period>("30d");
 
-  const { data: revenueData } = api.analytics.getRevenue.useQuery({ period });
+  const { data: revenueData, refetch: refetchRevenue } = api.analytics.getRevenue.useQuery({ period });
   const { data: orderStats } = api.analytics.getOrderStats.useQuery();
   const { data: topProducts } = api.analytics.getTopProducts.useQuery({ limit: 10 });
   const { data: customerStats } = api.analytics.getCustomerStats.useQuery();
@@ -53,8 +53,14 @@ export default function AdminAnalyticsPage() {
       }, 30000);
       return () => clearInterval(interval);
     }
+    if (activeTab === "Revenue") {
+      const interval = setInterval(() => {
+        void refetchRevenue();
+      }, 30000);
+      return () => clearInterval(interval);
+    }
     return undefined;
-  }, [activeTab, refetch]);
+  }, [activeTab, refetch, refetchRevenue]);
 
   return (
     <div>
@@ -95,7 +101,7 @@ export default function AdminAnalyticsPage() {
               </button>
             ))}
           </div>
-          {revenueData && <RevenueChart data={revenueData} />}
+          {revenueData && <RevenueChart data={revenueData} currency={currency} />}
         </div>
       )}
 

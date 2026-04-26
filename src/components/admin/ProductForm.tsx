@@ -17,7 +17,7 @@ type Variant = InferSelectModel<typeof productVariants>;
 const VariantSchema = z.object({
   sku: z.string().min(1, "SKU required"),
   name: z.string().min(1, "Name required"),
-  price: z.number().int().positive().optional(),
+  price: z.number().int().positive().optional().or(z.nan().transform(() => undefined)),
   stock: z.number().int().min(0).default(0),
   lowStockThreshold: z.number().int().min(0).default(10),
   weight: z.number().int().positive().optional(),
@@ -35,16 +35,14 @@ const ProductFormSchema = z.object({
     .string()
     .min(10, "Min 10 characters")
     .max(500, "Max 500 characters")
-    .regex(/^[a-zA-Z0-9\s.,!?'"()\-]+$/, "Alphanumeric and basic punctuation only")
     .optional(),
   description: z
     .string()
     .min(10, "Min 10 characters")
-    .max(500, "Max 500 characters")
-    .regex(/^[a-zA-Z0-9\s.,!?'"()\-]+$/, "Alphanumeric and basic punctuation only")
+    .max(2000, "Max 2000 characters")
     .optional(),
   price: z.number().int().positive("Price required"),
-  compareAtPrice: z.number().int().positive().optional(),
+  compareAtPrice: z.number().int().positive().optional().or(z.nan().transform(() => undefined)),
   category: z.enum(["perfumes", "cosmetics", "jewelry", "gift_sets"]),
   subcategory: z.string().optional(),
   images: z.array(z.string()).default([]),
