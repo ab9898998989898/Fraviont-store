@@ -128,13 +128,16 @@ export const productsRouter = createTRPCRouter({
     .input(ProductCreateInput)
     .mutation(async ({ input }) => {
       const { variants, ...productData } = input;
-      const [product] = await db.insert(products).values(productData).returning();
-      if (!product) throw new Error("Failed to create product");
-      if (variants.length > 0) {
-        await db.insert(productVariants).values(
-          variants.map((v) => ({ ...v, productId: product.id }))
-        );
-      }
+      const product = await db.transaction(async (tx) => {
+        const [created] = await tx.insert(products).values(productData).returning();
+        if (!created) throw new Error("Failed to create product");
+        if (variants.length > 0) {
+          await tx.insert(productVariants).values(
+            variants.map((v) => ({ ...v, productId: created.id }))
+          );
+        }
+        return created;
+      });
       await redis.del(`products:slug:${product.slug}`);
       return product;
     }),
@@ -143,12 +146,21 @@ export const productsRouter = createTRPCRouter({
     .input(z.object({ id: z.string().uuid() }).merge(ProductCreateInput.partial()))
     .mutation(async ({ input }) => {
       const { id, variants, ...updateData } = input;
-      const [product] = await db
-        .update(products)
-        .set({ ...updateData, updatedAt: new Date() })
-        .where(eq(products.id, id))
-        .returning();
-      if (!product) throw new Error("Product not found");
+      const product = await db.transaction(async (tx) => {
+        const [updated] = await tx
+          .update(products)
+          .set({ ...updateData, updatedAt: new Date() })
+          .where(eq(products.id, id))
+          .returning();
+        if (!updated) throw new Error("Product not found");
+        await tx.delete(productVariants).where(eq(productVariants.productId, id));
+        if (variants && variants.length > 0) {
+          await tx.insert(productVariants).values(
+            variants.map((v) => ({ ...v, productId: id }))
+          );
+        }
+        return updated;
+      });
       await redis.del(`products:slug:${product.slug}`);
       await redis.del(`products:id:${id}`);
       return product;

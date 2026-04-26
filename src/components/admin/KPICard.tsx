@@ -12,10 +12,11 @@ interface KPICardProps {
   value: number;
   previousValue?: number;
   format?: "price" | "number";
+  currency?: string;
   isLoading?: boolean;
 }
 
-export function KPICard({ label, value, previousValue, format = "number", isLoading }: KPICardProps) {
+export function KPICard({ label, value, previousValue, format = "number", currency = "ZAR", isLoading }: KPICardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
@@ -34,7 +35,7 @@ export function KPICard({ label, value, previousValue, format = "number", isLoad
       ? Math.round(((value - previousValue) / previousValue) * 100)
       : null;
 
-  const displayValue = format === "price" ? formatPrice(value) : value.toLocaleString();
+  const displayValue = format === "price" ? formatPrice(value, currency) : value.toLocaleString();
 
   return (
     <div

@@ -206,10 +206,10 @@ export function ProductForm({ product }: ProductFormProps) {
           <div>
             <label className={labelClass}>Category *</label>
             <select {...register("category")} className={inputClass}>
-              <option value="perfumes bg-black">Perfumes</option>
-              <option value="cosmetics bg-black">Cosmetics</option>
-              <option value="jewelry bg-black">Jewelry</option>
-              <option value="gift_sets bg-black">Gift Sets</option>
+              <option value="perfumes" className="bg-black">Perfumes</option>
+              <option value="cosmetics" className="bg-black">Cosmetics</option>
+              <option value="jewelry" className="bg-black">Jewelry</option>
+              <option value="gift_sets" className="bg-black">Gift Sets</option>
             </select>
           </div>
           <div>

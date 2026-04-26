@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "@/trpc/react";
 import { RevenueChart } from "@/components/admin/RevenueChart";
 import { formatPrice } from "@/lib/utils";
@@ -42,7 +42,19 @@ export default function AdminAnalyticsPage() {
   const { data: orderStats } = api.analytics.getOrderStats.useQuery();
   const { data: topProducts } = api.analytics.getTopProducts.useQuery({ limit: 10 });
   const { data: customerStats } = api.analytics.getCustomerStats.useQuery();
-  const { data: pnl } = api.analytics.getPnL.useQuery();
+  const { data: pnl, refetch } = api.analytics.getPnL.useQuery();
+  const { data: settings } = api.settings.get.useQuery();
+  const currency = settings?.currency;
+
+  useEffect(() => {
+    if (activeTab === "Finance") {
+      const interval = setInterval(() => {
+        void refetch();
+      }, 30000);
+      return () => clearInterval(interval);
+    }
+    return undefined;
+  }, [activeTab, refetch]);
 
   return (
     <div>
@@ -142,7 +154,7 @@ export default function AdminAnalyticsPage() {
                 tick={{ fill: "#7A7470", fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(v: number) => formatPrice(v)}
+                tickFormatter={(v: number) => formatPrice(v, currency)}
               />
               <YAxis
                 type="category"
@@ -154,7 +166,7 @@ export default function AdminAnalyticsPage() {
               />
               <Tooltip
                 {...tooltipStyle}
-                formatter={(value: number) => [formatPrice(value), "Price"]}
+                formatter={(value: number) => [formatPrice(value, currency), "Price"]}
               />
               <Bar dataKey="price" fill="#C9A84C" />
             </BarChart>
@@ -187,7 +199,7 @@ export default function AdminAnalyticsPage() {
                 {item.label}
               </p>
               <p className="text-gold-warm font-sans font-light text-3xl">
-                {formatPrice(item.value)}
+                {formatPrice(item.value, currency)}
               </p>
             </div>
           ))}

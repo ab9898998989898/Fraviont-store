@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { api } from "@/trpc/react";
@@ -22,6 +22,13 @@ export default function CustomersPage() {
     page,
     limit: ITEMS_PER_PAGE,
   });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      void refetch();
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [refetch]);
 
   const handleView = (id: string) => {
     router.push(`/admin/customers/${id}`);
