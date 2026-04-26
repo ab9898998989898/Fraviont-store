@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { api } from "@/trpc/react";
 import { RevenueChart } from "@/components/admin/RevenueChart";
 import { formatPrice } from "@/lib/utils";
@@ -38,29 +38,29 @@ export default function AdminAnalyticsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("Revenue");
   const [period, setPeriod] = useState<Period>("30d");
 
-  const { data: revenueData, refetch: refetchRevenue } = api.analytics.getRevenue.useQuery({ period });
-  const { data: orderStats } = api.analytics.getOrderStats.useQuery();
-  const { data: topProducts } = api.analytics.getTopProducts.useQuery({ limit: 10 });
-  const { data: customerStats } = api.analytics.getCustomerStats.useQuery();
-  const { data: pnl, refetch } = api.analytics.getPnL.useQuery();
+  // All queries use refetchInterval for real-time updates — no server-side cache
+  const { data: revenueData } = api.analytics.getRevenue.useQuery(
+    { period },
+    { refetchInterval: 30000 }
+  );
+  const { data: orderStats } = api.analytics.getOrderStats.useQuery(
+    undefined,
+    { refetchInterval: 30000 }
+  );
+  const { data: topProducts } = api.analytics.getTopProducts.useQuery(
+    { limit: 10 },
+    { refetchInterval: 60000 }
+  );
+  const { data: customerStats } = api.analytics.getCustomerStats.useQuery(
+    undefined,
+    { refetchInterval: 60000 }
+  );
+  const { data: pnl } = api.analytics.getPnL.useQuery(
+    undefined,
+    { refetchInterval: 30000 }
+  );
   const { data: settings } = api.settings.get.useQuery();
   const currency = settings?.currency;
-
-  useEffect(() => {
-    if (activeTab === "Finance") {
-      const interval = setInterval(() => {
-        void refetch();
-      }, 30000);
-      return () => clearInterval(interval);
-    }
-    if (activeTab === "Revenue") {
-      const interval = setInterval(() => {
-        void refetchRevenue();
-      }, 30000);
-      return () => clearInterval(interval);
-    }
-    return undefined;
-  }, [activeTab, refetch, refetchRevenue]);
 
   return (
     <div>

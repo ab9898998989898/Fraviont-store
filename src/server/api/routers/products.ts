@@ -46,6 +46,7 @@ const ProductCreateInput = z.object({
 });
 
 export const productsRouter = createTRPCRouter({
+  // Public storefront - only active products
   getAll: publicProcedure
     .input(
       z.object({
@@ -86,6 +87,47 @@ export const productsRouter = createTRPCRouter({
       });
     }),
 
+  // Admin - returns ALL products including inactive ones
+  adminGetAll: adminProcedure
+    .input(
+      z.object({
+        category: z.enum(["perfumes", "cosmetics", "jewelry", "gift_sets"]).optional(),
+        search: z.string().optional(),
+        status: z.enum(["all", "active", "inactive"]).default("all"),
+        page: z.number().int().positive().default(1),
+        limit: z.number().int().positive().max(50).default(20),
+      })
+    )
+    .query(async ({ input }) => {
+      const offset = (input.page - 1) * input.limit;
+
+      const conditions = [];
+      if (input.status === "active") conditions.push(eq(products.isActive, true));
+      if (input.status === "inactive") conditions.push(eq(products.isActive, false));
+      if (input.category) conditions.push(eq(products.category, input.category));
+      if (input.search) conditions.push(ilike(products.name, `%${input.search}%`));
+
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+      const [rows, allRows] = await Promise.all([
+        db
+          .select()
+          .from(products)
+          .where(where)
+          .orderBy(desc(products.createdAt))
+          .limit(input.limit)
+          .offset(offset),
+        db.select({ id: products.id }).from(products).where(where),
+      ]);
+
+      const total = allRows.length;
+      return {
+        products: rows,
+        total,
+        hasMore: offset + rows.length < total,
+      };
+    }),
+
   getBySlug: publicProcedure
     .input(z.object({ slug: z.string() }))
     .query(async ({ input }) => {
@@ -124,48 +166,87 @@ export const productsRouter = createTRPCRouter({
       return { ...product, variants };
     }),
 
+  // Create product - sequential queries instead of transaction (neon-http doesn't support transactions)
   create: adminProcedure
     .input(ProductCreateInput)
     .mutation(async ({ input }) => {
       const { variants, ...productData } = input;
-      const product = await db.transaction(async (tx) => {
-        const [created] = await tx.insert(products).values(productData).returning();
-        if (!created) throw new Error("Failed to create product");
-        if (variants.length > 0) {
-          await tx.insert(productVariants).values(
-            variants.map((v) => ({ ...v, productId: created.id }))
-          );
-        }
-        return created;
-      });
-      await redis.del(`products:slug:${product.slug}`);
-      return product;
+
+      // Step 1: Insert the product
+      const [created] = await db.insert(products).values(productData).returning();
+      if (!created) throw new Error("Failed to create product");
+
+      // Step 2: Insert variants if any
+      if (variants.length > 0) {
+        await db.insert(productVariants).values(
+          variants.map((v) => ({ ...v, productId: created.id }))
+        );
+      }
+
+      // Invalidate related caches
+      await redis.del(`products:slug:${created.slug}`);
+      return created;
     }),
 
+  // Update product - sequential queries instead of transaction (neon-http doesn't support transactions)
   update: adminProcedure
     .input(z.object({ id: z.string().uuid() }).merge(ProductCreateInput.partial()))
     .mutation(async ({ input }) => {
       const { id, variants, ...updateData } = input;
-      const product = await db.transaction(async (tx) => {
-        const [updated] = await tx
-          .update(products)
-          .set({ ...updateData, updatedAt: new Date() })
-          .where(eq(products.id, id))
-          .returning();
-        if (!updated) throw new Error("Product not found");
-        await tx.delete(productVariants).where(eq(productVariants.productId, id));
-        if (variants && variants.length > 0) {
-          await tx.insert(productVariants).values(
-            variants.map((v) => ({ ...v, productId: id }))
-          );
-        }
-        return updated;
-      });
-      await redis.del(`products:slug:${product.slug}`);
+
+      // Step 1: Update the product
+      const [updated] = await db
+        .update(products)
+        .set({ ...updateData, updatedAt: new Date() })
+        .where(eq(products.id, id))
+        .returning();
+      if (!updated) throw new Error("Product not found");
+
+      // Step 2: Delete existing variants
+      await db.delete(productVariants).where(eq(productVariants.productId, id));
+
+      // Step 3: Insert new variants if any
+      if (variants && variants.length > 0) {
+        await db.insert(productVariants).values(
+          variants.map((v) => ({ ...v, productId: id }))
+        );
+      }
+
+      // Invalidate related caches
+      await redis.del(`products:slug:${updated.slug}`);
       await redis.del(`products:id:${id}`);
-      return product;
+      return updated;
     }),
 
+  // Deactivate product (soft-delete)
+  deactivate: adminProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const [product] = await db
+        .update(products)
+        .set({ isActive: false, updatedAt: new Date() })
+        .where(eq(products.id, input.id))
+        .returning();
+      if (!product) throw new Error("Product not found");
+      await redis.del(`products:slug:${product.slug}`);
+      return { success: true };
+    }),
+
+  // Reactivate a previously deactivated product
+  reactivate: adminProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const [product] = await db
+        .update(products)
+        .set({ isActive: true, updatedAt: new Date() })
+        .where(eq(products.id, input.id))
+        .returning();
+      if (!product) throw new Error("Product not found");
+      await redis.del(`products:slug:${product.slug}`);
+      return { success: true };
+    }),
+
+  // Keep backward-compatible delete alias pointing to deactivate
   delete: adminProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ input }) => {

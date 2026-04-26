@@ -25,14 +25,16 @@ export default function ProductsPage() {
 
   const debouncedSearch = useDebounce(searchInput, 300);
 
-  const { data, isPending, isError, refetch } = api.products.getAll.useQuery({
+  // Use adminGetAll which returns ALL products including inactive ones
+  const { data, isPending, isError, refetch } = api.products.adminGetAll.useQuery({
     search: debouncedSearch || undefined,
     category: category || undefined,
+    status: statusFilter,
     page,
     limit: ITEMS_PER_PAGE,
   });
 
-  const deleteMutation = api.products.delete.useMutation({
+  const deactivateMutation = api.products.deactivate.useMutation({
     onSuccess: () => {
       toast.success("Product deactivated");
       refetch();
@@ -40,9 +42,23 @@ export default function ProductsPage() {
     onError: (e) => toast.error(e.message),
   });
 
+  const reactivateMutation = api.products.reactivate.useMutation({
+    onSuccess: () => {
+      toast.success("Product reactivated");
+      refetch();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   const handleDeactivate = (id: string, name: string) => {
     if (confirm(`Are you sure you want to deactivate "${name}"?`)) {
-      deleteMutation.mutate({ id });
+      deactivateMutation.mutate({ id });
+    }
+  };
+
+  const handleReactivate = (id: string, name: string) => {
+    if (confirm(`Reactivate "${name}"? It will appear in the storefront again.`)) {
+      reactivateMutation.mutate({ id });
     }
   };
 
@@ -54,13 +70,7 @@ export default function ProductsPage() {
     router.push("/admin/products/new");
   };
 
-  // Client-side status filtering (since API only returns active products)
-  const filteredProducts = data?.products.filter((product) => {
-    if (statusFilter === "active") return product.isActive;
-    if (statusFilter === "inactive") return !product.isActive;
-    return true;
-  }) ?? [];
-
+  const filteredProducts = data?.products ?? [];
   const totalPages = data ? Math.ceil(data.total / ITEMS_PER_PAGE) : 0;
 
   return (
@@ -139,7 +149,7 @@ export default function ProductsPage() {
         <>
           <div className="bg-charcoal border border-iron rounded-none">
             {/* Table Header */}
-            <div className="grid grid-cols-[80px_2fr_1fr_1fr_100px_120px_140px] gap-4 px-6 py-3 border-b border-iron">
+            <div className="grid grid-cols-[80px_2fr_1fr_1fr_100px_120px_160px] gap-4 px-6 py-3 border-b border-iron">
               {["Image", "Name", "Category", "Price", "Status", "Created", "Actions"].map((h) => (
                 <span
                   key={h}
@@ -159,7 +169,9 @@ export default function ProductsPage() {
               filteredProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="grid grid-cols-[80px_2fr_1fr_1fr_100px_120px_140px] gap-4 px-6 py-4 border-b border-iron/50 hover:bg-graphite transition-colors"
+                  className={`grid grid-cols-[80px_2fr_1fr_1fr_100px_120px_160px] gap-4 px-6 py-4 border-b border-iron/50 hover:bg-graphite transition-colors ${
+                    !product.isActive ? "opacity-60" : ""
+                  }`}
                 >
                   {/* Thumbnail */}
                   <div className="w-16 h-16 bg-[#1A1A1A] flex items-center justify-center overflow-hidden">
@@ -199,7 +211,7 @@ export default function ProductsPage() {
                       className={`text-xs font-sans px-2 py-1 rounded-none ${
                         product.isActive
                           ? "bg-emerald/20 text-emerald"
-                          : "bg-ash/20 text-ash"
+                          : "bg-crimson/20 text-crimson"
                       }`}
                     >
                       {product.isActive ? "Active" : "Inactive"}
@@ -219,15 +231,26 @@ export default function ProductsPage() {
                     >
                       Edit
                     </button>
-                    {product.isActive && (
+                    {product.isActive ? (
                       <>
                         <span className="text-ash">|</span>
                         <button
                           onClick={() => handleDeactivate(product.id, product.name)}
-                          disabled={deleteMutation.isPending}
+                          disabled={deactivateMutation.isPending}
                           className="text-crimson text-xs font-sans hover:brightness-125 transition-colors disabled:opacity-50"
                         >
                           Deactivate
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-ash">|</span>
+                        <button
+                          onClick={() => handleReactivate(product.id, product.name)}
+                          disabled={reactivateMutation.isPending}
+                          className="text-emerald text-xs font-sans hover:brightness-125 transition-colors disabled:opacity-50"
+                        >
+                          Reactivate
                         </button>
                       </>
                     )}
