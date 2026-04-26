@@ -17,11 +17,13 @@ function ToggleSwitch({
   onToggle,
   label,
   description,
+  isLoading,
 }: {
   enabled: boolean;
   onToggle: () => void;
   label: string;
   description: string;
+  isLoading?: boolean;
 }) {
   return (
     <div className="flex items-start justify-between py-4 border-b border-[#1E1E1E] last:border-b-0">
@@ -32,9 +34,10 @@ function ToggleSwitch({
       <button
         type="button"
         onClick={onToggle}
+        disabled={isLoading}
         className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${
           enabled ? "bg-gold-warm" : "bg-[#2A2A2A]"
-        }`}
+        } ${isLoading ? "opacity-50" : ""}`}
       >
         <span
           className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200 ${
@@ -48,14 +51,30 @@ function ToggleSwitch({
 
 export default function AdminSettingsPage() {
   const { data: settings, isLoading } = api.settings.get.useQuery();
+  const utils = api.useUtils();
+
   const updateSettings = api.settings.update.useMutation({
     onSuccess: () => {
       setStoreSaved(true);
       toast.success("Settings saved successfully");
+      utils.settings.get.invalidate();
       setTimeout(() => setStoreSaved(false), 2500);
     },
     onError: (e) => {
       toast.error(e.message || "Failed to save settings");
+    }
+  });
+
+  const updatePassword = api.settings.updatePassword.useMutation({
+    onSuccess: () => {
+      setPasswordSuccess(true);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setPasswordSuccess(false), 3000);
+    },
+    onError: (e) => {
+      setPasswordError(e.message || "Failed to update password");
     }
   });
 
@@ -87,7 +106,7 @@ export default function AdminSettingsPage() {
     }
   }, [settings]);
 
-  // Password change (Local stub)
+  // Password change
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -113,6 +132,28 @@ export default function AdminSettingsPage() {
     });
   }
 
+  function handleToggleNotification(key: string, newValue: boolean) {
+    // Optimistic update of local state
+    if (key === 'orderAlerts') setOrderAlerts(newValue);
+    if (key === 'lowStockAlerts') setLowStockAlerts(newValue);
+    if (key === 'weeklyDigest') setWeeklyDigest(newValue);
+    if (key === 'customerSignups') setCustomerSignups(newValue);
+    if (key === 'returnRequests') setReturnRequests(newValue);
+
+    // Save all to backend immediately
+    updateSettings.mutate({
+      storeName,
+      storeTagline,
+      contactEmail: storeEmail,
+      currency,
+      orderAlerts: key === 'orderAlerts' ? newValue : orderAlerts,
+      lowStockAlerts: key === 'lowStockAlerts' ? newValue : lowStockAlerts,
+      returnRequests: key === 'returnRequests' ? newValue : returnRequests,
+      customerSignups: key === 'customerSignups' ? newValue : customerSignups,
+      weeklyDigest: key === 'weeklyDigest' ? newValue : weeklyDigest,
+    });
+  }
+
   function handlePasswordChange(e: React.FormEvent) {
     e.preventDefault();
     setPasswordError("");
@@ -127,11 +168,7 @@ export default function AdminSettingsPage() {
       return;
     }
 
-    setPasswordSuccess(true);
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setTimeout(() => setPasswordSuccess(false), 3000);
+    updatePassword.mutate({ currentPassword, newPassword });
   }
 
   return (
@@ -209,9 +246,16 @@ export default function AdminSettingsPage() {
             </div>
             <button
               type="submit"
-              className="flex items-center gap-2 bg-gold-warm text-obsidian text-xs tracking-[0.14em] uppercase font-sans font-medium px-6 py-3 hover:bg-gold-bright transition-colors duration-300"
+              disabled={updateSettings.isPending}
+              className="flex items-center gap-2 bg-gold-warm text-obsidian text-xs tracking-[0.14em] uppercase font-sans font-medium px-6 py-3 hover:bg-gold-bright transition-colors duration-300 disabled:opacity-50"
             >
-              {storeSaved ? <Check size={14} /> : <Save size={14} />}
+              {updateSettings.isPending ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : storeSaved ? (
+                <Check size={14} />
+              ) : (
+                <Save size={14} />
+              )}
               {storeSaved ? "Saved" : "Save Changes"}
             </button>
           </form>
@@ -285,9 +329,10 @@ export default function AdminSettingsPage() {
             <div className="flex items-center gap-6">
               <button
                 type="submit"
-                className="flex items-center gap-2 bg-gold-warm text-obsidian text-xs tracking-[0.14em] uppercase font-sans font-medium px-6 py-3 hover:bg-gold-bright transition-colors duration-300"
+                disabled={updatePassword.isPending}
+                className="flex items-center gap-2 bg-gold-warm text-obsidian text-xs tracking-[0.14em] uppercase font-sans font-medium px-6 py-3 hover:bg-gold-bright transition-colors duration-300 disabled:opacity-50"
               >
-                <Lock size={14} />
+                {updatePassword.isPending ? <Loader2 size={14} className="animate-spin" /> : <Lock size={14} />}
                 Update Password
               </button>
               <button
@@ -322,35 +367,40 @@ export default function AdminSettingsPage() {
             <div>
               <ToggleSwitch
                 enabled={orderAlerts}
-                onToggle={() => setOrderAlerts(!orderAlerts)}
+                onToggle={() => handleToggleNotification('orderAlerts', !orderAlerts)}
                 label="New Order Alerts"
                 description="Email notification when a new order is placed."
+                isLoading={updateSettings.isPending}
               />
               <ToggleSwitch
                 enabled={lowStockAlerts}
-                onToggle={() => setLowStockAlerts(!lowStockAlerts)}
+                onToggle={() => handleToggleNotification('lowStockAlerts', !lowStockAlerts)}
                 label="Low Stock Alerts"
                 description="Get notified when a variant drops below its threshold."
+                isLoading={updateSettings.isPending}
               />
               <ToggleSwitch
                 enabled={returnRequests}
-                onToggle={() => setReturnRequests(!returnRequests)}
+                onToggle={() => handleToggleNotification('returnRequests', !returnRequests)}
                 label="Return Requests"
                 description="Receive alerts for new return or exchange requests."
+                isLoading={updateSettings.isPending}
               />
             </div>
             <div>
               <ToggleSwitch
                 enabled={customerSignups}
-                onToggle={() => setCustomerSignups(!customerSignups)}
+                onToggle={() => handleToggleNotification('customerSignups', !customerSignups)}
                 label="Customer Sign-ups"
                 description="Get notified when a new customer creates an account."
+                isLoading={updateSettings.isPending}
               />
               <ToggleSwitch
                 enabled={weeklyDigest}
-                onToggle={() => setWeeklyDigest(!weeklyDigest)}
+                onToggle={() => handleToggleNotification('weeklyDigest', !weeklyDigest)}
                 label="Weekly Digest"
                 description="Receive a weekly summary of sales, trends, and AI insights."
+                isLoading={updateSettings.isPending}
               />
             </div>
           </div>
@@ -360,3 +410,4 @@ export default function AdminSettingsPage() {
     </div>
   );
 }
+

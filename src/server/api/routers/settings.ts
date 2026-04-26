@@ -1,8 +1,10 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { storeSettings } from "@/server/db/schema";
+import { createTRPCRouter, adminProcedure } from "@/server/api/trpc";
+import { storeSettings, users } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { db } from "@/server/db";
+import bcrypt from "bcryptjs";
+import { TRPCError } from "@trpc/server";
 
 const settingsSchema = z.object({
   storeName: z.string().min(1),
@@ -17,7 +19,7 @@ const settingsSchema = z.object({
 });
 
 export const settingsRouter = createTRPCRouter({
-  get: protectedProcedure.query(async () => {
+  get: adminProcedure.query(async () => {
     // We only expect one settings row. If it doesn't exist, return defaults or create it.
     const settings = await db.query.storeSettings.findFirst();
     if (settings) return settings;
@@ -30,7 +32,7 @@ export const settingsRouter = createTRPCRouter({
     return newSettings;
   }),
 
-  update: protectedProcedure
+  update: adminProcedure
     .input(settingsSchema)
     .mutation(async ({ input }) => {
       const existing = await db.query.storeSettings.findFirst();
@@ -50,4 +52,30 @@ export const settingsRouter = createTRPCRouter({
         return created;
       }
     }),
+
+  updatePassword: adminProcedure
+    .input(
+      z.object({
+        currentPassword: z.string().min(1),
+        newPassword: z.string().min(8),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      
+      const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+
+      if (user.password) {
+        const isValid = await bcrypt.compare(input.currentPassword, user.password);
+        if (!isValid) throw new TRPCError({ code: "UNAUTHORIZED", message: "Incorrect current password" });
+      }
+
+      const hashedPassword = await bcrypt.hash(input.newPassword, 10);
+      
+      await db.update(users).set({ password: hashedPassword }).where(eq(users.id, userId));
+
+      return { success: true };
+    }),
 });
+
