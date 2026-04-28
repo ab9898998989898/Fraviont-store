@@ -6,7 +6,6 @@ import { httpBatchLink } from "@trpc/client";
 import { useState } from "react";
 import superjson from "superjson";
 import { type AppRouter } from "@/server/api/root";
-import { signOut } from "next-auth/react";
 import toast from "react-hot-toast";
 
 export const api = createTRPCReact<AppRouter>();

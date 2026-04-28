@@ -1,8 +1,7 @@
-@import "tailwindcss";
-
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&display=swap');
+@import "tailwindcss";
 
 @theme {
   --color-obsidian: #0A0A0A;

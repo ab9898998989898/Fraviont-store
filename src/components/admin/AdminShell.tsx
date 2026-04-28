@@ -7,10 +7,8 @@ import { AdminHeader } from "./AdminHeader";
 
 export function AdminShell({
   children,
-  session,
 }: {
   children: React.ReactNode;
-  session?: Session | null;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

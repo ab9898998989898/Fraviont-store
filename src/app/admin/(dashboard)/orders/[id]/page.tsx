@@ -2,12 +2,19 @@
 
 import { useState, use } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
 import { api } from "@/trpc/react";
 import { formatPrice } from "@/lib/utils";
 import { StatusTimeline } from "@/components/admin/StatusTimeline";
+
+// Simple local type for Address to avoid 'any' and complex imports
+interface OrderAddress {
+  firstName: string;
+  lastName: string;
+  line1: string;
+  city: string;
+}
 
 type OrderStatus =
   | "pending"
@@ -86,6 +93,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   if (isPending) return <div className="p-8 text-ash">Loading order...</div>;
   if (isError || !order) return <div className="p-8 text-crimson">Order not found.</div>;
 
+  const addr = order.shippingAddress as unknown as OrderAddress;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -109,12 +118,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
         
-        {order.shippingAddress && (
+        {addr && (
           <div>
             <p className="text-ash text-xs uppercase tracking-wider mb-1">Shipping Address</p>
             <p className="text-ivory text-sm">
-              {(order.shippingAddress as any).firstName} {(order.shippingAddress as any).lastName}<br/>
-              {(order.shippingAddress as any).line1}, {(order.shippingAddress as any).city}
+              {addr.firstName} {addr.lastName}<br/>
+              {addr.line1}, {addr.city}
             </p>
           </div>
         )}
@@ -149,8 +158,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               placeholder="Tracking Number"
               className="w-full bg-obsidian border border-iron text-ivory text-sm px-4 py-2"
             />
-            <button className="bg-gold-warm text-obsidian px-6 py-2 text-sm uppercase tracking-widest">
-              Update Status
+            <button className="bg-gold-warm text-obsidian px-6 py-2 text-sm uppercase tracking-widest disabled:opacity-50" disabled={updateStatusMutation.isPending}>
+              {updateStatusMutation.isPending ? "Updating..." : "Update Status"}
             </button>
           </form>
         </div>
@@ -162,10 +171,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <button
                 key={s}
                 onClick={() => handlePaymentStatusUpdate(s)}
-                disabled={order.paymentStatus === s}
+                disabled={order.paymentStatus === s || updatePaymentStatusMutation.isPending}
                 className={`px-4 py-2 text-[10px] uppercase tracking-widest border transition-all ${
                   order.paymentStatus === s ? "border-gold-warm text-gold-warm bg-gold-warm/10" : "border-iron text-ash"
-                }`}
+                } disabled:opacity-50`}
               >
                 {s}
               </button>
@@ -176,7 +185,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
       <div className="bg-charcoal border border-iron p-6">
         <h3 className="text-ivory text-xs uppercase tracking-widest mb-4">Internal Notes</h3>
-        {order.notes && <p className="text-ash text-sm mb-4 italic">"{order.notes}"</p>}
+        {order.notes && <p className="text-ash text-sm mb-4 italic">&quot;{order.notes}&quot;</p>}
         <textarea
           value={noteInput}
           onChange={(e) => setNoteInput(e.target.value)}
@@ -184,8 +193,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           className="w-full bg-obsidian border border-iron text-ivory text-sm px-4 py-2 mb-4"
           rows={3}
         />
-        <button onClick={handleNoteSave} className="border border-gold-warm text-gold-warm px-6 py-2 text-sm uppercase tracking-widest">
-          Save Note
+        <button onClick={handleNoteSave} className="border border-gold-warm text-gold-warm px-6 py-2 text-sm uppercase tracking-widest disabled:opacity-50" disabled={addNoteMutation.isPending}>
+          {addNoteMutation.isPending ? "Saving..." : "Save Note"}
         </button>
       </div>
     </div>

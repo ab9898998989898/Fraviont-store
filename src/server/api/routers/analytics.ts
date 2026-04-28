@@ -7,9 +7,6 @@ import { orders, products, productVariants, customers } from "@/server/db/schema
 export const analyticsRouter = createTRPCRouter({
   getDashboardStats: adminProcedure.query(async () => {
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterdayStart = new Date(todayStart.getTime() - 86400000);
-    const weekStart = new Date(todayStart.getTime() - 7 * 86400000);
 
     const [todayOrders, yesterdayOrders, weekOrders, recentOrders, lowStockVariants] =
       await Promise.all([

@@ -47,14 +47,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Session Tracking: Generate a new unique ID for this login
         let activeSessionId: string;
-        try {
-          if (typeof crypto !== "undefined" && crypto.randomUUID) {
-            activeSessionId = crypto.randomUUID();
-          } else {
-            const { randomUUID } = await import("crypto");
-            activeSessionId = randomUUID();
-          }
-        } catch {
+        if (typeof crypto !== "undefined" && crypto.randomUUID) {
+          activeSessionId = crypto.randomUUID();
+        } else {
           activeSessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
         }
 
