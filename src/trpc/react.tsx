@@ -6,7 +6,7 @@ import { httpBatchLink } from "@trpc/client";
 import { useState } from "react";
 import superjson from "superjson";
 import { type AppRouter } from "@/server/api/root";
-import { signOut } from "next-auth/react";
+import { signOut, SessionProvider } from "next-auth/react";
 import toast from "react-hot-toast";
 
 export const api = createTRPCReact<AppRouter>();
@@ -65,8 +65,10 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <api.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </api.Provider>
+    <SessionProvider>
+      <api.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </api.Provider>
+    </SessionProvider>
   );
 }
