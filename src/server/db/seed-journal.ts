@@ -40,7 +40,7 @@ async function main() {
   try {
     const cleanJson = contentText.replace(/```json\n?|\n?```/g, "").trim();
     parsed = JSON.parse(cleanJson);
-  } catch (_err) {
+  } catch {
     console.error("Failed to parse response:", contentText);
     process.exit(1);
   }

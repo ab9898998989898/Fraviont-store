@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { gte } from "drizzle-orm";
 import { db } from "@/server/db";
 import { orders } from "@/server/db/schema";
@@ -8,7 +8,7 @@ import { redis } from "@/lib/redis/client";
 
 import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 
-async function handler(_req: NextRequest) {
+async function handler() {
   try {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { and, eq, lte } from "drizzle-orm";
 import { db } from "@/server/db";
 import { orders, orderItems } from "@/server/db/schema";
@@ -9,7 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 
-async function handler(_req: NextRequest) {
+async function handler() {
   try {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 
