@@ -138,14 +138,22 @@ export const aiRouter = createTRPCRouter({
             : 0,
       };
 
-      const digest = await callAI({
-        model: "openai/gpt-4o",
-        system: buildDailyDigestPrompt(stats),
-        messages: [{ role: "user", content: "Write the daily digest." }],
-        max_tokens: 300,
-      });
+      try {
+        const digest = await callAI({
+          model: "openai/gpt-4o",
+          system: buildDailyDigestPrompt(stats),
+          messages: [{ role: "user", content: "Write the daily digest." }],
+          max_tokens: 300,
+        });
 
-      return { digest, generatedAt: new Date().toISOString() };
+        return { digest, generatedAt: new Date().toISOString() };
+      } catch (error) {
+        console.error("[AI Digest Error]:", error);
+        return { 
+          digest: "The AI is currently resting. Please check back later for your daily digest.", 
+          generatedAt: new Date().toISOString() 
+        };
+      }
     });
   }),
 
@@ -180,14 +188,14 @@ export const aiRouter = createTRPCRouter({
       const stockData = variants.map((v) => ({ sku: v.sku, name: v.name, stock: v.stock }));
       const salesData = Object.entries(salesBySku).map(([sku, unitsSold]) => ({ sku, unitsSold }));
 
-      const raw = await callAI({
-        model: "openai/gpt-4o",
-        system: buildForecastPrompt(stockData, salesData),
-        messages: [{ role: "user", content: "Generate the forecast." }],
-        max_tokens: 1000,
-      });
-
       try {
+        const raw = await callAI({
+          model: "openai/gpt-4o",
+          system: buildForecastPrompt(stockData, salesData),
+          messages: [{ role: "user", content: "Generate the forecast." }],
+          max_tokens: 1000,
+        });
+
         return JSON.parse(raw) as {
           variantSku: string;
           currentStock: number;
@@ -195,7 +203,8 @@ export const aiRouter = createTRPCRouter({
           urgency: string;
           reasoning: string;
         }[];
-      } catch {
+      } catch (error) {
+        console.error("[AI Forecast Error]:", error);
         return [];
       }
     });

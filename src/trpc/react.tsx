@@ -1,32 +1,38 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
 import { createTRPCReact } from "@trpc/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { useState } from "react";
 import superjson from "superjson";
 import { type AppRouter } from "@/server/api/root";
+import { signOut } from "next-auth/react";
+import toast from "react-hot-toast";
 
 export const api = createTRPCReact<AppRouter>();
 
 function makeQueryClient() {
   return new QueryClient({
-    // queryCache: new QueryCache({
-    //   onError: (error: unknown) => {
-    //     if (error instanceof Error && error.message === "SESSION_INVALIDATED") {
-    //       toast.error("Session invalidated by another login");
-    //       void signOut({ callbackUrl: "/admin/login" });
-    //     }
-    //   },
-    // }),
-    // mutationCache: new MutationCache({
-    //   onError: (error: unknown) => {
-    //     if (error instanceof Error && error.message === "SESSION_INVALIDATED") {
-    //       toast.error("Session invalidated by another login");
-    //       void signOut({ callbackUrl: "/admin/login" });
-    //     }
-    //   },
-    // }),
+    queryCache: new QueryCache({
+      onError: (error: unknown) => {
+        if (error instanceof Error && error.message === "SESSION_INVALIDATED") {
+          toast.error("Session invalidated by another login");
+          // void signOut({ callbackUrl: "/admin/login" });
+        } else {
+          console.error("[TRPC Query Error]:", error);
+        }
+      },
+    }),
+    mutationCache: new MutationCache({
+      onError: (error: unknown) => {
+        if (error instanceof Error && error.message === "SESSION_INVALIDATED") {
+          toast.error("Session invalidated by another login");
+          // void signOut({ callbackUrl: "/admin/login" });
+        } else {
+          console.error("[TRPC Mutation Error]:", error);
+        }
+      },
+    }),
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000,

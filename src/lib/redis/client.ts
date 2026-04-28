@@ -33,9 +33,16 @@ export async function withCache<T>(
   ttl: number,
   fn: () => Promise<T>
 ): Promise<T> {
-  const cached = await redis.get<T>(key);
-  if (cached !== null) return cached;
-  const result = await fn();
-  await redis.setex(key, ttl, result as Parameters<typeof redis.setex>[2]);
-  return result;
+  try {
+    const cached = await redis.get<T>(key);
+    if (cached !== null) return cached;
+    
+    const result = await fn();
+    await redis.setex(key, ttl, result as Parameters<typeof redis.setex>[2]);
+    return result;
+  } catch (error) {
+    console.error(`[Redis Cache Error] Key: ${key}`, error);
+    // Fall back to direct execution if Redis fails
+    return await fn();
+  }
 }
