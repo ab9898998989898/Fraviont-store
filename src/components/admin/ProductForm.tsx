@@ -28,30 +28,29 @@ const ProductFormSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(3, "Min 3 characters")
-    .max(100, "Max 100 characters")
-    .regex(/^[a-zA-Z0-9-'\s]+$/, "Letters, numbers, hyphens, apostrophes only"),
+    .min(1, "Name required")
+    .max(100, "Max 100 characters"),
   shortDescription: z
     .string()
-    .min(10, "Min 10 characters")
     .max(500, "Max 500 characters")
-    .optional(),
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   description: z
     .string()
-    .min(10, "Min 10 characters")
     .max(2000, "Max 2000 characters")
-    .optional(),
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   price: z.number().int().positive("Price required"),
   compareAtPrice: z.number().int().positive().optional().or(z.nan().transform(() => undefined)),
   category: z.enum(["perfumes", "cosmetics", "jewelry", "gift_sets"]),
-  subcategory: z.string().optional(),
+  subcategory: z.string().optional().or(z.literal("").transform(() => undefined)),
   images: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
-  ingredients: z.string().optional(),
+  ingredients: z.string().optional().or(z.literal("").transform(() => undefined)),
   isActive: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
-  metaTitle: z.string().optional(),
-  metaDescription: z.string().optional(),
+  metaTitle: z.string().optional().or(z.literal("").transform(() => undefined)),
+  metaDescription: z.string().optional().or(z.literal("").transform(() => undefined)),
   variants: z.array(VariantSchema).default([]),
 });
 
@@ -169,7 +168,11 @@ export function ProductForm({ product }: ProductFormProps) {
   const TABS = ["basic", "media", "description", "variants", "seo"] as const;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit, (errs) => {
+      const first = Object.values(errs)[0];
+      const msg = first && "message" in first ? (first.message as string) : "Please fix form errors";
+      toast.error(msg);
+    })} className="space-y-6">
       {/* Tabs */}
       <div className="flex gap-0 border-b border-[#1E1E1E]">
         {TABS.map((tab) => (
