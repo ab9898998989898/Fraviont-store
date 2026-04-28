@@ -6,8 +6,6 @@ import { orders, products, productVariants, customers } from "@/server/db/schema
 
 export const analyticsRouter = createTRPCRouter({
   getDashboardStats: adminProcedure.query(async () => {
-    const now = new Date();
-
     const [todayOrders, yesterdayOrders, weekOrders, recentOrders, lowStockVariants] =
       await Promise.all([
         db.select().from(orders).where(

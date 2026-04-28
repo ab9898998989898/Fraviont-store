@@ -9,15 +9,9 @@ export default async function AdminLayout({
 }) {
   const session = await auth();
 
-  if (!session) {
+  if (!session || session.user.role !== "ADMIN") {
     redirect("/admin/login");
   }
 
-  if (session.user.role !== "ADMIN") {
-    redirect("/admin/login");
-  }
-
-  return (
-    <AdminShell session={session}>{children}</AdminShell>
-  );
+  return <AdminShell>{children}</AdminShell>;
 }
