@@ -45,11 +45,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const isValid = await compare(password, user.password);
         if (!isValid) return null;
 
+        // Session Tracking: Generate a new unique ID for this login
+        const activeSessionId = crypto.randomUUID();
+
+        // Save it to the database (this evicts any previous session)
+        await db.update(users)
+          .set({ activeSessionId })
+          .where(eq(users.id, user.id));
+
         return {
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
+          activeSessionId,
         };
       },
     }),
@@ -59,6 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role ?? "USER";
+        token.activeSessionId = (user as { activeSessionId?: string }).activeSessionId;
       }
       return token;
     },
@@ -68,6 +78,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         ...session.user,
         id: token.id as string,
         role: (token.role as string) ?? "USER",
+        activeSessionId: token.activeSessionId as string,
       },
     }),
   },

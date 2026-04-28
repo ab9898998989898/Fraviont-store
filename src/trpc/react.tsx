@@ -1,19 +1,41 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
 import { createTRPCReact } from "@trpc/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { useState } from "react";
 import superjson from "superjson";
 import { type AppRouter } from "@/server/api/root";
+import { signOut } from "next-auth/react";
+import toast from "react-hot-toast";
 
 export const api = createTRPCReact<AppRouter>();
 
 function makeQueryClient() {
   return new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error: any) => {
+        if (error?.message === "SESSION_INVALIDATED") {
+          toast.error("Session invalidated by another login");
+          void signOut({ callbackUrl: "/admin/login" });
+        }
+      },
+    }),
+    mutationCache: new MutationCache({
+      onError: (error: any) => {
+        if (error?.message === "SESSION_INVALIDATED") {
+          toast.error("Session invalidated by another login");
+          void signOut({ callbackUrl: "/admin/login" });
+        }
+      },
+    }),
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000,
+        retry: (failureCount, error: any) => {
+          if (error?.message === "SESSION_INVALIDATED") return false;
+          return failureCount < 3;
+        },
       },
     },
   });

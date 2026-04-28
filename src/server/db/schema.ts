@@ -52,6 +52,7 @@ export const users = pgTable("users", {
   image:         text("image"),
   role:          text("role").default("USER"),
   password:      text("password"),
+  activeSessionId: text("active_session_id"),
 });
 
 export const accounts = pgTable("accounts", {
