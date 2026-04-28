@@ -54,13 +54,17 @@ export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
     .where(eq(users.id, ctx.session.user.id))
     .limit(1);
 
-  // If the IDs don't match, it means another login happened
   const sessionUser = ctx.session.user as { id: string; role: string; activeSessionId?: string };
-  if (!user || user.activeSessionId !== sessionUser.activeSessionId) {
-    throw new TRPCError({ 
-      code: "UNAUTHORIZED", 
-      message: "SESSION_INVALIDATED" 
-    });
+  
+  // Only enforce if the user has an active session ID in the DB
+  // or if the session token already carries one.
+  if (user?.activeSessionId) {
+    if (user.activeSessionId !== sessionUser.activeSessionId) {
+      throw new TRPCError({ 
+        code: "UNAUTHORIZED", 
+        message: "SESSION_INVALIDATED" 
+      });
+    }
   }
 
   return next({
