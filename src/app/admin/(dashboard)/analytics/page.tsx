@@ -38,26 +38,25 @@ export default function AdminAnalyticsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("Revenue");
   const [period, setPeriod] = useState<Period>("30d");
 
-  // All queries use refetchInterval for real-time updates — no server-side cache
   const { data: revenueData } = api.analytics.getRevenue.useQuery(
     { period },
-    { refetchInterval: 15000, staleTime: 0 }
+    { refetchInterval: 15000, staleTime: 0, refetchIntervalInBackground: true }
   );
   const { data: orderStats } = api.analytics.getOrderStats.useQuery(
     undefined,
-    { refetchInterval: 15000, staleTime: 0 }
+    { refetchInterval: 15000, staleTime: 0, refetchIntervalInBackground: true }
   );
   const { data: topProducts } = api.analytics.getTopProducts.useQuery(
     { limit: 10 },
-    { refetchInterval: 30000, staleTime: 0 }
+    { refetchInterval: 30000, staleTime: 0, refetchIntervalInBackground: true }
   );
   const { data: customerStats } = api.analytics.getCustomerStats.useQuery(
     undefined,
-    { refetchInterval: 30000, staleTime: 0 }
+    { refetchInterval: 30000, staleTime: 0, refetchIntervalInBackground: true }
   );
   const { data: pnl } = api.analytics.getPnL.useQuery(
     undefined,
-    { refetchInterval: 15000, staleTime: 0 }
+    { refetchInterval: 15000, staleTime: 0, refetchIntervalInBackground: true }
   );
   const { data: settings } = api.settings.get.useQuery();
   const currency = settings?.currency;

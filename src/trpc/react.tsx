@@ -40,6 +40,9 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
         httpBatchLink({
           url: "/api/trpc",
           transformer: superjson,
+          headers: () => ({
+            "cache-control": "no-store",
+          }),
         }),
       ],
     })

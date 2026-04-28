@@ -11,14 +11,16 @@ import { KPICardSkeleton } from "@/components/shared/skeletons/KPICardSkeleton";
 export default function AdminDashboardPage() {
   const { data: stats } =
     api.analytics.getDashboardStats.useQuery(undefined, {
-      refetchInterval: 15000, // Auto-refetch every 15 seconds for real-time data
+      refetchInterval: 15000,
       staleTime: 0,
+      refetchIntervalInBackground: true,
     });
   const { data: revenueData } = api.analytics.getRevenue.useQuery(
     { period: "7d" },
     {
-      refetchInterval: 15000, // Auto-refetch every 15 seconds
+      refetchInterval: 15000,
       staleTime: 0,
+      refetchIntervalInBackground: true,
     }
   );
   const { data: settings } = api.settings.get.useQuery();
