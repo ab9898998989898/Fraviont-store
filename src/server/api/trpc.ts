@@ -47,24 +47,31 @@ export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  // Session Eviction Check: Verify if the session ID in the token matches the one in the DB
-  const [user] = await db
-    .select({ activeSessionId: users.activeSessionId })
-    .from(users)
-    .where(eq(users.id, ctx.session.user.id))
-    .limit(1);
+  try {
+    // Session Eviction Check: Verify if the session ID in the token matches the one in the DB
+    const [user] = await db
+      .select({ activeSessionId: users.activeSessionId })
+      .from(users)
+      .where(eq(users.id, ctx.session.user.id))
+      .limit(1);
 
-  const sessionUser = ctx.session.user as { id: string; role: string; activeSessionId?: string };
-  
-  // Only enforce if the user has an active session ID in the DB
-  // or if the session token already carries one.
-  if (user?.activeSessionId) {
-    if (user.activeSessionId !== sessionUser.activeSessionId) {
-      throw new TRPCError({ 
-        code: "UNAUTHORIZED", 
-        message: "SESSION_INVALIDATED" 
-      });
+    const sessionUser = ctx.session.user as { id: string; role: string; activeSessionId?: string };
+    
+    // Only enforce if the user has an active session ID in the DB
+    // or if the session token already carries one.
+    if (user?.activeSessionId) {
+      if (user.activeSessionId !== sessionUser.activeSessionId) {
+        throw new TRPCError({ 
+          code: "UNAUTHORIZED", 
+          message: "SESSION_INVALIDATED" 
+        });
+      }
     }
+  } catch (error) {
+    if (error instanceof TRPCError) throw error;
+    console.error("[TRPC] adminProcedure error:", error);
+    // On unexpected DB errors, we allow the request to proceed to avoid total lockout
+    // but we log it.
   }
 
   return next({

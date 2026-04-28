@@ -9,8 +9,22 @@ export default async function AdminLayout({
 }) {
   const session = await auth();
 
-  if (!session || session.user.role !== "ADMIN") {
-    redirect("/admin/login");
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center p-8">
+        <p className="text-ivory mb-4">No session found.</p>
+        <a href="/admin/login" className="text-gold-warm underline">Go to Login</a>
+      </div>
+    );
+  }
+
+  if (session.user.role !== "ADMIN") {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center p-8">
+        <p className="text-ivory mb-4">Access Restricted. Role: {session.user.role}</p>
+        <a href="/" className="text-gold-warm underline">Go to Store</a>
+      </div>
+    );
   }
 
   return (

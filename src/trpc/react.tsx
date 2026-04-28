@@ -6,29 +6,29 @@ import { httpBatchLink } from "@trpc/client";
 import { useState } from "react";
 import superjson from "superjson";
 import { type AppRouter } from "@/server/api/root";
-import { signOut, SessionProvider } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import toast from "react-hot-toast";
 
 export const api = createTRPCReact<AppRouter>();
 
 function makeQueryClient() {
   return new QueryClient({
-    queryCache: new QueryCache({
-      onError: (error: unknown) => {
-        if (error instanceof Error && error.message === "SESSION_INVALIDATED") {
-          toast.error("Session invalidated by another login");
-          void signOut({ callbackUrl: "/admin/login" });
-        }
-      },
-    }),
-    mutationCache: new MutationCache({
-      onError: (error: unknown) => {
-        if (error instanceof Error && error.message === "SESSION_INVALIDATED") {
-          toast.error("Session invalidated by another login");
-          void signOut({ callbackUrl: "/admin/login" });
-        }
-      },
-    }),
+    // queryCache: new QueryCache({
+    //   onError: (error: unknown) => {
+    //     if (error instanceof Error && error.message === "SESSION_INVALIDATED") {
+    //       toast.error("Session invalidated by another login");
+    //       void signOut({ callbackUrl: "/admin/login" });
+    //     }
+    //   },
+    // }),
+    // mutationCache: new MutationCache({
+    //   onError: (error: unknown) => {
+    //     if (error instanceof Error && error.message === "SESSION_INVALIDATED") {
+    //       toast.error("Session invalidated by another login");
+    //       void signOut({ callbackUrl: "/admin/login" });
+    //     }
+    //   },
+    // }),
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000,
@@ -65,10 +65,8 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <SessionProvider>
-      <api.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      </api.Provider>
-    </SessionProvider>
+    <api.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </api.Provider>
   );
 }

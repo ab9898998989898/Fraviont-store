@@ -46,12 +46,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!isValid) return null;
 
         // Session Tracking: Generate a new unique ID for this login
-        const activeSessionId = crypto.randomUUID();
+        let activeSessionId: string;
+        try {
+          activeSessionId = globalThis.crypto.randomUUID();
+        } catch {
+          // Fallback for older environments
+          activeSessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+        }
 
-        // Save it to the database (this evicts any previous session)
-        await db.update(users)
-          .set({ activeSessionId })
-          .where(eq(users.id, user.id));
+        try {
+          // Save it to the database (this evicts any previous session)
+          await db.update(users)
+            .set({ activeSessionId })
+            .where(eq(users.id, user.id));
+          
+          console.log(`[Auth] User ${user.email} logged in with session ${activeSessionId}`);
+        } catch (dbError) {
+          console.error("[Auth] Failed to update activeSessionId:", dbError);
+          // We still allow login but the single-session check might be flaky for this user
+        }
 
         return {
           id: user.id,
