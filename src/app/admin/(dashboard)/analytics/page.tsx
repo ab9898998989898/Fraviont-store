@@ -41,23 +41,23 @@ export default function AdminAnalyticsPage() {
   // All queries use refetchInterval for real-time updates — no server-side cache
   const { data: revenueData } = api.analytics.getRevenue.useQuery(
     { period },
-    { refetchInterval: 30000 }
+    { refetchInterval: 15000, staleTime: 0 }
   );
   const { data: orderStats } = api.analytics.getOrderStats.useQuery(
     undefined,
-    { refetchInterval: 30000 }
+    { refetchInterval: 15000, staleTime: 0 }
   );
   const { data: topProducts } = api.analytics.getTopProducts.useQuery(
     { limit: 10 },
-    { refetchInterval: 60000 }
+    { refetchInterval: 30000, staleTime: 0 }
   );
   const { data: customerStats } = api.analytics.getCustomerStats.useQuery(
     undefined,
-    { refetchInterval: 60000 }
+    { refetchInterval: 30000, staleTime: 0 }
   );
   const { data: pnl } = api.analytics.getPnL.useQuery(
     undefined,
-    { refetchInterval: 30000 }
+    { refetchInterval: 15000, staleTime: 0 }
   );
   const { data: settings } = api.settings.get.useQuery();
   const currency = settings?.currency;
