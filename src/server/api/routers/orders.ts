@@ -139,6 +139,25 @@ export const ordersRouter = createTRPCRouter({
       return order;
     }),
 
+  updatePaymentStatus: adminProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        paymentStatus: z.enum(["pending", "paid", "failed", "refunded"]),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const [order] = await db
+        .update(orders)
+        .set({
+          paymentStatus: input.paymentStatus,
+          updatedAt: new Date(),
+        })
+        .where(eq(orders.id, input.id))
+        .returning();
+      return order;
+    }),
+
   addNote: adminProcedure
     .input(z.object({ id: z.string().uuid(), note: z.string().min(1) }))
     .mutation(async ({ input }) => {

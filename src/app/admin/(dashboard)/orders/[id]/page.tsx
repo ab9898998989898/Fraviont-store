@@ -39,6 +39,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     onError: (e) => toast.error(e.message),
   });
 
+  const updatePaymentStatusMutation = api.orders.updatePaymentStatus.useMutation({
+    onSuccess: () => {
+      toast.success("Payment status updated");
+      refetch();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   const addNoteMutation = api.orders.addNote.useMutation({
     onSuccess: () => {
       toast.success("Note saved");
@@ -57,6 +65,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     });
   };
 
+  const handlePaymentStatusUpdate = (status: "pending" | "paid" | "failed" | "refunded") => {
+    updatePaymentStatusMutation.mutate({
+      id,
+      paymentStatus: status,
+    });
+  };
+
   const handleNoteSave = () => {
     if (!noteInput.trim()) {
       toast.error("Note cannot be empty");
@@ -68,61 +83,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     });
   };
 
-  // Loading state
-  if (isPending) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <div className="skeleton h-8 w-8" />
-          <div className="skeleton h-8 w-48" />
-        </div>
-        <div className="skeleton h-32 w-full" />
-        <div className="skeleton h-24 w-full" />
-        <div className="skeleton h-64 w-full" />
-        <div className="skeleton h-32 w-full" />
-        <div className="skeleton h-24 w-full" />
-      </div>
-    );
-  }
-
-  // Error state
-  if (isError) {
-    return (
-      <div className="bg-charcoal border border-iron p-8 text-center rounded-none">
-        <p className="text-crimson text-sm font-sans mb-4">Failed to load order</p>
-        <button
-          onClick={() => refetch()}
-          className="text-gold-warm text-sm font-sans hover:text-gold-bright transition-colors"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-
-  // Not found state
-  if (!order) {
-    return (
-      <div className="bg-charcoal border border-iron p-8 text-center rounded-none">
-        <p className="text-ivory text-sm font-sans mb-4">Order not found</p>
-        <Link
-          href="/admin/orders"
-          className="text-gold-warm text-sm font-sans hover:text-gold-bright transition-colors"
-        >
-          Back to Orders
-        </Link>
-      </div>
-    );
-  }
+  if (isPending) return <div className="p-8 text-ash">Loading order...</div>;
+  if (isError || !order) return <div className="p-8 text-crimson">Order not found.</div>;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
-        <button
-          onClick={() => router.push("/admin/orders")}
-          className="text-ash hover:text-ivory transition-colors"
-        >
+        <button onClick={() => router.push("/admin/orders")} className="text-ash hover:text-ivory">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h2 className="font-display text-ivory font-light text-3xl">
@@ -130,215 +97,96 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         </h2>
       </div>
 
-      {/* Order Summary */}
-      <div className="bg-charcoal border border-iron p-6 space-y-4 rounded-none">
-        <h3 className="font-display text-ivory text-xl font-light">Order Summary</h3>
+      <div className="bg-charcoal border border-iron p-6 space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-ash text-xs uppercase tracking-wider font-sans mb-1">
-              Customer Email
-            </p>
-            <p className="text-ivory text-sm font-sans">{order.email}</p>
+            <p className="text-ash text-xs uppercase tracking-wider mb-1">Customer</p>
+            <p className="text-ivory text-sm">{order.email}</p>
           </div>
           <div>
-            <p className="text-ash text-xs uppercase tracking-wider font-sans mb-1">
-              Order Number
-            </p>
-            <p className="text-ivory text-sm font-sans">{order.orderNumber}</p>
+            <p className="text-ash text-xs uppercase tracking-wider mb-1">Total</p>
+            <p className="text-gold-warm text-sm">{formatPrice(order.total)}</p>
           </div>
         </div>
-
-        {/* Shipping Address */}
+        
         {order.shippingAddress && (
           <div>
-            <p className="text-ash text-xs uppercase tracking-wider font-sans mb-1">
-              Shipping Address
-            </p>
-            <p className="text-ivory text-sm font-sans">
-              {order.shippingAddress.firstName} {order.shippingAddress.lastName}
-              <br />
-              {order.shippingAddress.line1}
-              {order.shippingAddress.line2 && (
-                <>
-                  <br />
-                  {order.shippingAddress.line2}
-                </>
-              )}
-              <br />
-              {order.shippingAddress.city}, {order.shippingAddress.province}{" "}
-              {order.shippingAddress.postalCode}
-              <br />
-              {order.shippingAddress.country}
+            <p className="text-ash text-xs uppercase tracking-wider mb-1">Shipping Address</p>
+            <p className="text-ivory text-sm">
+              {(order.shippingAddress as any).firstName} {(order.shippingAddress as any).lastName}<br/>
+              {(order.shippingAddress as any).line1}, {(order.shippingAddress as any).city}
             </p>
           </div>
         )}
-
-        {/* Order Totals */}
-        <div className="border-t border-graphite pt-4 space-y-2">
-          <div className="flex justify-between">
-            <span className="text-parchment text-sm font-sans">Subtotal</span>
-            <span className="text-ivory text-sm font-sans">
-              {formatPrice(order.subtotal ?? 0)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-parchment text-sm font-sans">Shipping</span>
-            <span className="text-ivory text-sm font-sans">
-              {formatPrice(order.shippingTotal ?? 0)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-parchment text-sm font-sans">Tax</span>
-            <span className="text-ivory text-sm font-sans">
-              {formatPrice(order.taxTotal ?? 0)}
-            </span>
-          </div>
-          <div className="flex justify-between border-t border-iron pt-2">
-            <span className="text-ivory text-base font-sans font-medium">Total</span>
-            <span className="text-ivory text-base font-sans font-medium">
-              {formatPrice(order.total)}
-            </span>
-          </div>
-        </div>
       </div>
 
-      {/* Status Timeline */}
-      <div className="bg-charcoal border border-iron p-6 rounded-none">
-        <h3 className="font-display text-ivory text-xl font-light mb-6">
-          Order Status
-        </h3>
+      <div className="bg-charcoal border border-iron p-6">
+        <h3 className="text-ivory text-xs uppercase tracking-widest mb-6">Status Timeline</h3>
         <StatusTimeline currentStatus={order.status ?? "pending"} />
       </div>
 
-      {/* Line Items */}
-      <div className="bg-charcoal border border-iron rounded-none">
-        <div className="p-6 border-b border-iron">
-          <h3 className="font-display text-ivory text-xl font-light">Line Items</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-charcoal border border-iron p-6">
+          <h3 className="text-ivory text-xs uppercase tracking-widest mb-4">Order Status</h3>
+          <form onSubmit={handleStatusUpdate} className="space-y-4">
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value as OrderStatus)}
+              className="w-full bg-obsidian border border-iron text-ivory text-sm px-4 py-2"
+            >
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="refunded">Refunded</option>
+            </select>
+            <input
+              type="text"
+              value={trackingNumber}
+              onChange={(e) => setTrackingNumber(e.target.value)}
+              placeholder="Tracking Number"
+              className="w-full bg-obsidian border border-iron text-ivory text-sm px-4 py-2"
+            />
+            <button className="bg-gold-warm text-obsidian px-6 py-2 text-sm uppercase tracking-widest">
+              Update Status
+            </button>
+          </form>
         </div>
-        <div className="overflow-x-auto">
-          {/* Table Header */}
-          <div className="grid grid-cols-[2fr_140px_140px_100px_120px_120px] gap-4 px-6 py-3 border-b border-iron">
-            {["Product Name", "SKU", "Variant", "Quantity", "Unit Price", "Line Total"].map(
-              (h) => (
-                <span
-                  key={h}
-                  className="text-ash text-xs tracking-[0.14em] uppercase font-sans"
-                >
-                  {h}
-                </span>
-              ),
-            )}
-          </div>
 
-          {/* Table Body */}
-          {order.items && order.items.length > 0 ? (
-            order.items.map((item) => (
-              <div
-                key={item.id}
-                className="grid grid-cols-[2fr_140px_140px_100px_120px_120px] gap-4 px-6 py-4 border-b border-iron/50"
+        <div className="bg-charcoal border border-iron p-6">
+          <h3 className="text-ivory text-xs uppercase tracking-widest mb-4">Payment Status</h3>
+          <div className="flex flex-wrap gap-2">
+            {(["pending", "paid", "failed", "refunded"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => handlePaymentStatusUpdate(s)}
+                disabled={order.paymentStatus === s}
+                className={`px-4 py-2 text-[10px] uppercase tracking-widest border transition-all ${
+                  order.paymentStatus === s ? "border-gold-warm text-gold-warm bg-gold-warm/10" : "border-iron text-ash"
+                }`}
               >
-                <span className="text-ivory text-sm font-sans self-center">
-                  {item.name}
-                </span>
-                <span className="text-parchment text-sm font-sans self-center">
-                  {item.sku}
-                </span>
-                <span className="text-parchment text-sm font-sans self-center">
-                  {item.variantId ? "Yes" : "Standard"}
-                </span>
-                <span className="text-ivory text-sm font-sans self-center">
-                  {item.quantity}
-                </span>
-                <span className="text-ivory text-sm font-sans self-center">
-                  {formatPrice(item.unitPrice)}
-                </span>
-                <span className="text-ivory text-sm font-sans self-center">
-                  {formatPrice(item.totalPrice)}
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-ash text-sm font-sans px-6 py-8 text-center">
-              No items found.
-            </p>
-          )}
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Status Update Form */}
-      <div className="bg-charcoal border border-iron p-6 rounded-none">
-        <h3 className="font-display text-ivory text-xl font-light mb-4">
-          Update Status
-        </h3>
-        <form onSubmit={handleStatusUpdate} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-ash text-xs uppercase tracking-wider font-sans block mb-2">
-                Status
-              </label>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value as OrderStatus)}
-                className="w-full bg-obsidian border border-iron text-ivory text-sm font-sans px-4 py-2 rounded-none focus:outline-none focus:border-gold-antique transition-colors"
-              >
-                <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="processing">Processing</option>
-                <option value="shipped">Shipped</option>
-                <option value="delivered">Delivered</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="refunded">Refunded</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-ash text-xs uppercase tracking-wider font-sans block mb-2">
-                Tracking Number (Optional)
-              </label>
-              <input
-                type="text"
-                value={trackingNumber}
-                onChange={(e) => setTrackingNumber(e.target.value)}
-                placeholder="Enter tracking number"
-                className="w-full bg-obsidian border border-iron text-ivory text-sm font-sans px-4 py-2 rounded-none focus:outline-none focus:border-gold-antique transition-colors"
-              />
-            </div>
-          </div>
-          <button
-            type="submit"
-            disabled={updateStatusMutation.isPending}
-            className="bg-gold-warm text-obsidian px-6 py-2 rounded-none text-sm font-sans hover:bg-gold-bright transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {updateStatusMutation.isPending ? "Updating..." : "Update Status"}
-          </button>
-        </form>
-      </div>
-
-      {/* Notes Section */}
-      <div className="bg-charcoal border border-iron p-6 rounded-none">
-        <h3 className="font-display text-ivory text-xl font-light mb-4">Notes</h3>
-        {order.notes && (
-          <div className="bg-obsidian border border-iron p-4 mb-4 rounded-none">
-            <p className="text-parchment text-sm font-sans whitespace-pre-wrap">
-              {order.notes}
-            </p>
-          </div>
-        )}
-        <div className="space-y-4">
-          <textarea
-            value={noteInput}
-            onChange={(e) => setNoteInput(e.target.value)}
-            placeholder="Add a note..."
-            rows={4}
-            className="w-full bg-obsidian border border-iron text-ivory text-sm font-sans px-4 py-2 rounded-none focus:outline-none focus:border-gold-antique transition-colors resize-none"
-          />
-          <button
-            onClick={handleNoteSave}
-            disabled={addNoteMutation.isPending || !noteInput.trim()}
-            className="bg-gold-warm text-obsidian px-6 py-2 rounded-none text-sm font-sans hover:bg-gold-bright transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {addNoteMutation.isPending ? "Saving..." : "Save Note"}
-          </button>
-        </div>
+      <div className="bg-charcoal border border-iron p-6">
+        <h3 className="text-ivory text-xs uppercase tracking-widest mb-4">Internal Notes</h3>
+        {order.notes && <p className="text-ash text-sm mb-4 italic">"{order.notes}"</p>}
+        <textarea
+          value={noteInput}
+          onChange={(e) => setNoteInput(e.target.value)}
+          placeholder="Add a private note..."
+          className="w-full bg-obsidian border border-iron text-ivory text-sm px-4 py-2 mb-4"
+          rows={3}
+        />
+        <button onClick={handleNoteSave} className="border border-gold-warm text-gold-warm px-6 py-2 text-sm uppercase tracking-widest">
+          Save Note
+        </button>
       </div>
     </div>
   );
