@@ -15,20 +15,20 @@ export const analyticsRouter = createTRPCRouter({
       await Promise.all([
         db.select().from(orders).where(
           and(
-            gte(orders.createdAt, todayStart),
+            gte(orders.createdAt, sql`CURRENT_DATE`),
             inArray(orders.paymentStatus, ["paid", "pending"])
           )
         ),
         db.select().from(orders).where(
           and(
-            gte(orders.createdAt, yesterdayStart),
-            lt(orders.createdAt, todayStart),
+            gte(orders.createdAt, sql`CURRENT_DATE - INTERVAL '1 day'`),
+            lt(orders.createdAt, sql`CURRENT_DATE`),
             inArray(orders.paymentStatus, ["paid", "pending"])
           )
         ),
         db.select().from(orders).where(
           and(
-            gte(orders.createdAt, weekStart),
+            gte(orders.createdAt, sql`CURRENT_DATE - INTERVAL '7 days'`),
             inArray(orders.paymentStatus, ["paid", "pending"])
           )
         ),

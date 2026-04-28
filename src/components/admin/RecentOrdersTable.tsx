@@ -22,7 +22,7 @@ export function RecentOrdersTable({ orders: rows }: RecentOrdersTableProps) {
             <p className="text-ash text-sm font-sans px-6 py-4">No orders yet.</p>
           ) : (
             rows.map((order) => (
-              <div key={order.id} className="grid grid-cols-4 gap-4 px-6 py-3">
+              <div key={order.id} className="grid grid-cols-5 gap-4 px-6 py-3">
                 <span className="text-ivory text-xs font-sans font-light truncate">
                   {order.orderNumber}
                 </span>
@@ -34,6 +34,11 @@ export function RecentOrdersTable({ orders: rows }: RecentOrdersTableProps) {
                 </span>
                 <span className="text-gold-warm text-xs font-sans">
                   {formatPrice(order.total)}
+                </span>
+                <span className={`text-[10px] uppercase font-sans tracking-widest ${
+                  order.paymentStatus === 'paid' ? 'text-emerald' : 'text-gold-warm'
+                }`}>
+                  {order.paymentStatus}
                 </span>
               </div>
             ))
