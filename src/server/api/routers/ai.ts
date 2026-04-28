@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, gte } from "drizzle-orm";
+import { eq, gte, lt, and, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, publicProcedure, adminProcedure } from "@/server/api/trpc";
 import { db } from "@/server/db";
@@ -115,16 +115,33 @@ export const aiRouter = createTRPCRouter({
     }),
 
   getDailyDigest: adminProcedure.query(async () => {
-    return withCache("ai:digest", 60 * 60 * 23, async () => {
+    const dateKey = new Date().toISOString().slice(0, 10);
+    return withCache(`ai:digest:${dateKey}`, 60 * 60 * 24, async () => {
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const yesterdayStart = new Date(todayStart.getTime() - 86400000);
       const weekStart = new Date(todayStart.getTime() - 7 * 86400000);
 
       const [todayOrders, yesterdayOrders, weekOrders] = await Promise.all([
-        db.select().from(orders).where(gte(orders.createdAt, todayStart)),
-        db.select().from(orders).where(gte(orders.createdAt, yesterdayStart)),
-        db.select().from(orders).where(gte(orders.createdAt, weekStart)),
+        db.select().from(orders).where(
+          and(
+            gte(orders.createdAt, todayStart),
+            inArray(orders.paymentStatus, ["paid", "pending"])
+          )
+        ),
+        db.select().from(orders).where(
+          and(
+            gte(orders.createdAt, yesterdayStart),
+            lt(orders.createdAt, todayStart),
+            inArray(orders.paymentStatus, ["paid", "pending"])
+          )
+        ),
+        db.select().from(orders).where(
+          and(
+            gte(orders.createdAt, weekStart),
+            inArray(orders.paymentStatus, ["paid", "pending"])
+          )
+        ),
       ]);
 
       const stats = {

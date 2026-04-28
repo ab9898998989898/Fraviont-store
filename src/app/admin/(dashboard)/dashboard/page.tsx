@@ -12,11 +12,13 @@ export default function AdminDashboardPage() {
   const { data: stats } =
     api.analytics.getDashboardStats.useQuery(undefined, {
       refetchInterval: 15000, // Auto-refetch every 15 seconds for real-time data
+      staleTime: 0,
     });
   const { data: revenueData } = api.analytics.getRevenue.useQuery(
     { period: "7d" },
     {
       refetchInterval: 15000, // Auto-refetch every 15 seconds
+      staleTime: 0,
     }
   );
   const { data: settings } = api.settings.get.useQuery();

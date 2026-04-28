@@ -19,7 +19,7 @@ export async function callAI({
     ? [{ role: "system" as const, content: system }, ...messages]
     : messages;
 
-  const keyToUse = apiKey || process.env.OPENROUTER_API_KEY;
+  const keyToUse = apiKey || process.env.OPENROUTER_API_KEY || process.env.OPENROUTER2_API_KEY;
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
