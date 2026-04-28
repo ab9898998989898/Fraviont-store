@@ -16,27 +16,29 @@ export function RecentOrdersTable({ orders: rows }: RecentOrdersTableProps) {
           Recent Orders
         </h3>
       </div>
-      <div className="divide-y divide-[#1E1E1E]">
-        {rows.length === 0 ? (
-          <p className="text-ash text-sm font-sans px-6 py-4">No orders yet.</p>
-        ) : (
-          rows.map((order) => (
-            <div key={order.id} className="grid grid-cols-4 gap-4 px-6 py-3">
-              <span className="text-ivory text-xs font-sans font-light truncate">
-                {order.orderNumber}
-              </span>
-              <span className="text-parchment text-xs font-sans truncate">
-                {order.email}
-              </span>
-              <span className="text-parchment text-xs font-sans">
-                {order.createdAt ? formatDate(order.createdAt) : "—"}
-              </span>
-              <span className="text-gold-warm text-xs font-sans">
-                {formatPrice(order.total)}
-              </span>
-            </div>
-          ))
-        )}
+      <div className="overflow-x-auto">
+        <div className="divide-y divide-[#1E1E1E] min-w-[600px]">
+          {rows.length === 0 ? (
+            <p className="text-ash text-sm font-sans px-6 py-4">No orders yet.</p>
+          ) : (
+            rows.map((order) => (
+              <div key={order.id} className="grid grid-cols-4 gap-4 px-6 py-3">
+                <span className="text-ivory text-xs font-sans font-light truncate">
+                  {order.orderNumber}
+                </span>
+                <span className="text-parchment text-xs font-sans truncate">
+                  {order.email}
+                </span>
+                <span className="text-parchment text-xs font-sans">
+                  {order.createdAt ? formatDate(order.createdAt) : "—"}
+                </span>
+                <span className="text-gold-warm text-xs font-sans">
+                  {formatPrice(order.total)}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

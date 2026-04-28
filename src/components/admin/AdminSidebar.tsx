@@ -13,6 +13,7 @@ import {
   Boxes,
   ChevronLeft,
   ChevronRight,
+  Eraser,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
   { label: "Customers", href: "/admin/customers", icon: Users },
   { label: "Settings", href: "/admin/settings", icon: Settings },
+  { label: "Maintenance", href: "/admin/maintenance", icon: Eraser },
 ];
 
 export function AdminSidebar({

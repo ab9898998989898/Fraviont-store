@@ -147,117 +147,119 @@ export default function ProductsPage() {
         </div>
       ) : (
         <>
-          <div className="bg-charcoal border border-iron rounded-none">
-            {/* Table Header */}
-            <div className="grid grid-cols-[80px_2fr_1fr_1fr_100px_120px_160px] gap-4 px-6 py-3 border-b border-iron">
-              {["Image", "Name", "Category", "Price", "Status", "Created", "Actions"].map((h) => (
-                <span
-                  key={h}
-                  className="text-ash text-xs tracking-[0.14em] uppercase font-sans"
-                >
-                  {h}
-                </span>
-              ))}
-            </div>
-
-            {/* Table Body */}
-            {filteredProducts.length === 0 ? (
-              <p className="text-ash text-sm font-sans px-6 py-8 text-center">
-                No products found.
-              </p>
-            ) : (
-              filteredProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className={`grid grid-cols-[80px_2fr_1fr_1fr_100px_120px_160px] gap-4 px-6 py-4 border-b border-iron/50 hover:bg-graphite transition-colors ${
-                    !product.isActive ? "opacity-60" : ""
-                  }`}
-                >
-                  {/* Thumbnail */}
-                  <div className="w-16 h-16 bg-[#1A1A1A] flex items-center justify-center overflow-hidden">
-                    {product.images && product.images[0] ? (
-                      <Image
-                        src={product.images[0]}
-                        alt={product.name}
-                        width={64}
-                        height={64}
-                        className="object-cover w-full h-full"
-                      />
-                    ) : (
-                      <span className="text-ash text-xs">No image</span>
-                    )}
-                  </div>
-
-                  {/* Name */}
-                  <div className="min-w-0 self-center">
-                    <p className="text-ivory text-sm font-sans font-light truncate">
-                      {product.name}
-                    </p>
-                  </div>
-
-                  {/* Category */}
-                  <span className="text-parchment text-sm font-sans capitalize self-center">
-                    {product.category.replace("_", " ")}
+          <div className="bg-charcoal border border-iron rounded-none overflow-x-auto">
+            <div className="min-w-[1000px]">
+              {/* Table Header */}
+              <div className="grid grid-cols-[80px_2fr_1fr_1fr_100px_120px_160px] gap-4 px-6 py-3 border-b border-iron">
+                {["Image", "Name", "Category", "Price", "Status", "Created", "Actions"].map((h) => (
+                  <span
+                    key={h}
+                    className="text-ash text-xs tracking-[0.14em] uppercase font-sans"
+                  >
+                    {h}
                   </span>
+                ))}
+              </div>
 
-                  {/* Price */}
-                  <span className="text-ivory text-sm font-sans self-center">
-                    {formatPrice(product.price)}
-                  </span>
+              {/* Table Body */}
+              {filteredProducts.length === 0 ? (
+                <p className="text-ash text-sm font-sans px-6 py-8 text-center">
+                  No products found.
+                </p>
+              ) : (
+                filteredProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className={`grid grid-cols-[80px_2fr_1fr_1fr_100px_120px_160px] gap-4 px-6 py-4 border-b border-iron/50 hover:bg-graphite transition-colors ${
+                      !product.isActive ? "opacity-60" : ""
+                    }`}
+                  >
+                    {/* Thumbnail */}
+                    <div className="w-16 h-16 bg-[#1A1A1A] flex items-center justify-center overflow-hidden">
+                      {product.images && product.images[0] ? (
+                        <Image
+                          src={product.images[0]}
+                          alt={product.name}
+                          width={64}
+                          height={64}
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <span className="text-ash text-xs">No image</span>
+                      )}
+                    </div>
 
-                  {/* Status */}
-                  <div className="self-center">
-                    <span
-                      className={`text-xs font-sans px-2 py-1 rounded-none ${
-                        product.isActive
-                          ? "bg-emerald/20 text-emerald"
-                          : "bg-crimson/20 text-crimson"
-                      }`}
-                    >
-                      {product.isActive ? "Active" : "Inactive"}
+                    {/* Name */}
+                    <div className="min-w-0 self-center">
+                      <p className="text-ivory text-sm font-sans font-light truncate">
+                        {product.name}
+                      </p>
+                    </div>
+
+                    {/* Category */}
+                    <span className="text-parchment text-sm font-sans capitalize self-center">
+                      {product.category.replace("_", " ")}
                     </span>
-                  </div>
 
-                  {/* Created Date */}
-                  <span className="text-parchment text-xs font-sans self-center">
-                    {product.createdAt ? formatDate(product.createdAt) : "—"}
-                  </span>
+                    {/* Price */}
+                    <span className="text-ivory text-sm font-sans self-center">
+                      {formatPrice(product.price)}
+                    </span>
 
-                  {/* Actions */}
-                  <div className="flex gap-2 self-center">
-                    <button
-                      onClick={() => handleEdit(product.id)}
-                      className="text-gold-warm text-xs font-sans hover:text-gold-bright transition-colors"
-                    >
-                      Edit
-                    </button>
-                    {product.isActive ? (
-                      <>
-                        <span className="text-ash">|</span>
-                        <button
-                          onClick={() => handleDeactivate(product.id, product.name)}
-                          disabled={deactivateMutation.isPending}
-                          className="text-crimson text-xs font-sans hover:brightness-125 transition-colors disabled:opacity-50"
-                        >
-                          Deactivate
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-ash">|</span>
-                        <button
-                          onClick={() => handleReactivate(product.id, product.name)}
-                          disabled={reactivateMutation.isPending}
-                          className="text-emerald text-xs font-sans hover:brightness-125 transition-colors disabled:opacity-50"
-                        >
-                          Reactivate
-                        </button>
-                      </>
-                    )}
+                    {/* Status */}
+                    <div className="self-center">
+                      <span
+                        className={`text-xs font-sans px-2 py-1 rounded-none ${
+                          product.isActive
+                            ? "bg-emerald/20 text-emerald"
+                            : "bg-crimson/20 text-crimson"
+                        }`}
+                      >
+                        {product.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </div>
+
+                    {/* Created Date */}
+                    <span className="text-parchment text-xs font-sans self-center">
+                      {product.createdAt ? formatDate(product.createdAt) : "—"}
+                    </span>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 self-center">
+                      <button
+                        onClick={() => handleEdit(product.id)}
+                        className="text-gold-warm text-xs font-sans hover:text-gold-bright transition-colors"
+                      >
+                        Edit
+                      </button>
+                      {product.isActive ? (
+                        <>
+                          <span className="text-ash">|</span>
+                          <button
+                            onClick={() => handleDeactivate(product.id, product.name)}
+                            disabled={deactivateMutation.isPending}
+                            className="text-crimson text-xs font-sans hover:brightness-125 transition-colors disabled:opacity-50"
+                          >
+                            Deactivate
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-ash">|</span>
+                          <button
+                            onClick={() => handleReactivate(product.id, product.name)}
+                            disabled={reactivateMutation.isPending}
+                            className="text-emerald text-xs font-sans hover:brightness-125 transition-colors disabled:opacity-50"
+                          >
+                            Reactivate
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
 
           {/* Pagination */}

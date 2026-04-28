@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, adminProcedure } from "@/server/api/trpc";
-import { storeSettings, users } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import { storeSettings, users, orders, orderItems, customers, inventoryLogs } from "@/server/db/schema";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/server/db";
 import bcrypt from "bcryptjs";
 import { TRPCError } from "@trpc/server";
@@ -77,5 +77,16 @@ export const settingsRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+  resetData: adminProcedure.mutation(async () => {
+    // Dangerous operation: Truncate all transactional tables
+    // We use sequential deletes because some adapters don't support TRUNCATE CASCADE easily
+    await db.delete(orderItems);
+    await db.delete(orders);
+    await db.delete(inventoryLogs);
+    await db.delete(customers);
+    
+    return { success: true };
+  }),
 });
 

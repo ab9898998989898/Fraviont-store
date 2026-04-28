@@ -73,76 +73,78 @@ export default function CustomersPage() {
         </div>
       ) : (
         <>
-          <div className="bg-[#111111] border border-graphite">
-            {/* Table Header */}
-            <div className="grid grid-cols-[2fr_2fr_140px_140px_120px_100px] gap-4 px-6 py-3 border-b border-graphite">
-              {[
-                "Name",
-                "Email",
-                "Total Orders",
-                "Total Spent",
-                "Registered",
-                "Actions",
-              ].map((h) => (
-                <span
-                  key={h}
-                  className="text-ash text-xs tracking-[0.14em] uppercase font-sans"
-                >
-                  {h}
-                </span>
-              ))}
+          <div className="bg-[#111111] border border-graphite overflow-x-auto">
+            <div className="min-w-[800px]">
+              {/* Table Header */}
+              <div className="grid grid-cols-[2fr_2fr_140px_140px_120px_100px] gap-4 px-6 py-3 border-b border-graphite">
+                {[
+                  "Name",
+                  "Email",
+                  "Total Orders",
+                  "Total Spent",
+                  "Registered",
+                  "Actions",
+                ].map((h) => (
+                  <span
+                    key={h}
+                    className="text-ash text-xs tracking-[0.14em] uppercase font-sans"
+                  >
+                    {h}
+                  </span>
+                ))}
+              </div>
+
+              {/* Table Body */}
+              {!data?.customers || data.customers.length === 0 ? (
+                <p className="text-ash text-sm font-sans px-6 py-8 text-center">
+                  No customers found.
+                </p>
+              ) : (
+                data.customers.map((customer) => (
+                  <div
+                    key={customer.id}
+                    className="grid grid-cols-[2fr_2fr_140px_140px_120px_100px] gap-4 px-6 py-4 border-b border-graphite/50 hover:bg-[#161616] transition-colors"
+                  >
+                    {/* Name */}
+                    <span className="text-ivory text-sm font-sans self-center truncate">
+                      {customer.name}
+                    </span>
+
+                    {/* Email */}
+                    <div className="min-w-0 self-center">
+                      <p className="text-parchment text-sm font-sans truncate">
+                        {customer.email}
+                      </p>
+                    </div>
+
+                    {/* Total Orders */}
+                    <span className="text-ivory text-sm font-sans self-center">
+                      {customer.totalOrders ?? 0}
+                    </span>
+
+                    {/* Total Spent */}
+                    <span className="text-ivory text-sm font-sans self-center">
+                      {formatPrice(customer.totalSpent ?? 0)}
+                    </span>
+
+                    {/* Registered Date */}
+                    <span className="text-parchment text-xs font-sans self-center">
+                      {customer.createdAt ? formatDate(customer.createdAt) : "—"}
+                    </span>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 self-center">
+                      <button
+                        onClick={() => handleView(customer.id)}
+                        className="text-gold-warm text-xs font-sans hover:text-gold-warm/80 transition-colors"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-
-            {/* Table Body */}
-            {!data?.customers || data.customers.length === 0 ? (
-              <p className="text-ash text-sm font-sans px-6 py-8 text-center">
-                No customers found.
-              </p>
-            ) : (
-              data.customers.map((customer) => (
-                <div
-                  key={customer.id}
-                  className="grid grid-cols-[2fr_2fr_140px_140px_120px_100px] gap-4 px-6 py-4 border-b border-graphite/50 hover:bg-[#161616] transition-colors"
-                >
-                  {/* Name */}
-                  <span className="text-ivory text-sm font-sans self-center truncate">
-                    {customer.name}
-                  </span>
-
-                  {/* Email */}
-                  <div className="min-w-0 self-center">
-                    <p className="text-parchment text-sm font-sans truncate">
-                      {customer.email}
-                    </p>
-                  </div>
-
-                  {/* Total Orders */}
-                  <span className="text-ivory text-sm font-sans self-center">
-                    {customer.totalOrders ?? 0}
-                  </span>
-
-                  {/* Total Spent */}
-                  <span className="text-ivory text-sm font-sans self-center">
-                    {formatPrice(customer.totalSpent ?? 0)}
-                  </span>
-
-                  {/* Registered Date */}
-                  <span className="text-parchment text-xs font-sans self-center">
-                    {customer.createdAt ? formatDate(customer.createdAt) : "—"}
-                  </span>
-
-                  {/* Actions */}
-                  <div className="flex gap-2 self-center">
-                    <button
-                      onClick={() => handleView(customer.id)}
-                      className="text-gold-warm text-xs font-sans hover:text-gold-warm/80 transition-colors"
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
           </div>
 
           {/* Pagination */}

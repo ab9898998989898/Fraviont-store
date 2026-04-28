@@ -67,7 +67,7 @@ export default function AdminAnalyticsPage() {
       <h2 className="font-display text-ivory font-light text-3xl mb-8">Analytics</h2>
 
       {/* Tabs */}
-      <div className="flex gap-0 border-b border-[#1E1E1E] mb-8">
+      <div className="flex flex-wrap gap-0 border-b border-[#1E1E1E] mb-8">
         {TABS.map((tab) => (
           <button
             key={tab}
@@ -86,7 +86,7 @@ export default function AdminAnalyticsPage() {
       {/* Revenue Tab */}
       {activeTab === "Revenue" && (
         <div className="space-y-6">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {PERIOD_OPTIONS.map((p) => (
               <button
                 key={p}

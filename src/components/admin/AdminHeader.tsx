@@ -13,6 +13,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/analytics": "Analytics",
   "/admin/customers": "Customers",
   "/admin/settings": "Settings",
+  "/admin/maintenance": "Maintenance",
 };
 
 export function AdminHeader({

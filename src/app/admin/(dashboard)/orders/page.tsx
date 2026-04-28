@@ -127,82 +127,84 @@ export default function OrdersPage() {
         </div>
       ) : (
         <>
-          <div className="bg-charcoal border border-iron rounded-none">
-            {/* Table Header */}
-            <div className="grid grid-cols-[140px_1fr_120px_120px_120px_120px_100px] gap-4 px-6 py-3 border-b border-iron">
-              {[
-                "Order Number",
-                "Customer Email",
-                "Total",
-                "Order Status",
-                "Payment Status",
-                "Created",
-                "Actions",
-              ].map((h) => (
-                <span
-                  key={h}
-                  className="text-ash text-xs tracking-[0.14em] uppercase font-sans"
-                >
-                  {h}
-                </span>
-              ))}
+          <div className="bg-charcoal border border-iron rounded-none overflow-x-auto">
+            <div className="min-w-[1000px]">
+              {/* Table Header */}
+              <div className="grid grid-cols-[140px_1fr_120px_120px_120px_120px_100px] gap-4 px-6 py-3 border-b border-iron">
+                {[
+                  "Order Number",
+                  "Customer Email",
+                  "Total",
+                  "Order Status",
+                  "Payment Status",
+                  "Created",
+                  "Actions",
+                ].map((h) => (
+                  <span
+                    key={h}
+                    className="text-ash text-xs tracking-[0.14em] uppercase font-sans"
+                  >
+                    {h}
+                  </span>
+                ))}
+              </div>
+
+              {/* Table Body */}
+              {!data?.orders || data.orders.length === 0 ? (
+                <p className="text-ash text-sm font-sans px-6 py-8 text-center">
+                  No orders found.
+                </p>
+              ) : (
+                data.orders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="grid grid-cols-[140px_1fr_120px_120px_120px_120px_100px] gap-4 px-6 py-4 border-b border-iron/50 hover:bg-graphite transition-colors"
+                  >
+                    {/* Order Number */}
+                    <span className="text-ivory text-sm font-sans self-center">
+                      {order.orderNumber}
+                    </span>
+
+                    {/* Customer Email */}
+                    <div className="min-w-0 self-center">
+                      <p className="text-parchment text-sm font-sans truncate">
+                        {order.email}
+                      </p>
+                    </div>
+
+                    {/* Total */}
+                    <span className="text-ivory text-sm font-sans self-center">
+                      {formatPrice(order.total)}
+                    </span>
+
+                    {/* Order Status */}
+                    <div className="self-center">
+                      <StatusBadge status={order.status ?? "pending"} />
+                    </div>
+
+                    {/* Payment Status */}
+                    <span className="text-parchment text-sm font-sans capitalize self-center">
+                      {order.paymentStatus}
+                    </span>
+
+                    {/* Created Date */}
+                    <span className="text-parchment text-xs font-sans self-center">
+                      {order.createdAt ? formatDate(order.createdAt) : "—"}
+                    </span>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 self-center">
+                      <button
+                        onClick={() => handleView(order.id)}
+                        className="text-gold-warm text-xs font-sans hover:text-gold-bright transition-colors"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-
-            {/* Table Body */}
-            {!data?.orders || data.orders.length === 0 ? (
-              <p className="text-ash text-sm font-sans px-6 py-8 text-center">
-                No orders found.
-              </p>
-            ) : (
-              data.orders.map((order) => (
-                <div
-                  key={order.id}
-                  className="grid grid-cols-[140px_1fr_120px_120px_120px_120px_100px] gap-4 px-6 py-4 border-b border-iron/50 hover:bg-graphite transition-colors"
-                >
-                  {/* Order Number */}
-                  <span className="text-ivory text-sm font-sans self-center">
-                    {order.orderNumber}
-                  </span>
-
-                  {/* Customer Email */}
-                  <div className="min-w-0 self-center">
-                    <p className="text-parchment text-sm font-sans truncate">
-                      {order.email}
-                    </p>
-                  </div>
-
-                  {/* Total */}
-                  <span className="text-ivory text-sm font-sans self-center">
-                    {formatPrice(order.total)}
-                  </span>
-
-                  {/* Order Status */}
-                  <div className="self-center">
-                    <StatusBadge status={order.status ?? "pending"} />
-                  </div>
-
-                  {/* Payment Status */}
-                  <span className="text-parchment text-sm font-sans capitalize self-center">
-                    {order.paymentStatus}
-                  </span>
-
-                  {/* Created Date */}
-                  <span className="text-parchment text-xs font-sans self-center">
-                    {order.createdAt ? formatDate(order.createdAt) : "—"}
-                  </span>
-
-                  {/* Actions */}
-                  <div className="flex gap-2 self-center">
-                    <button
-                      onClick={() => handleView(order.id)}
-                      className="text-gold-warm text-xs font-sans hover:text-gold-bright transition-colors"
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
           </div>
 
           {/* Pagination */}
