@@ -17,7 +17,7 @@ export default function AdminDashboardPage() {
   const { data: revenueData, refetch: refetchRevenue } = api.analytics.getRevenue.useQuery(
     { period: "7d" },
     {
-      refetchInterval: 30000, // Auto-refetch every 30 seconds
+      refetchInterval: 15000, // Auto-refetch every 15 seconds
     }
   );
   const { data: settings } = api.settings.get.useQuery();

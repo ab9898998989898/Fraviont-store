@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, gte, lt, and, lte, desc, sql } from "drizzle-orm";
+import { eq, gte, lt, and, lte, desc, sql, inArray } from "drizzle-orm";
 import { createTRPCRouter, adminProcedure } from "@/server/api/trpc";
 import { db } from "@/server/db";
 import { orders, products, productVariants, customers } from "@/server/db/schema";
@@ -14,17 +14,23 @@ export const analyticsRouter = createTRPCRouter({
     const [todayOrders, yesterdayOrders, weekOrders, recentOrders, lowStockVariants] =
       await Promise.all([
         db.select().from(orders).where(
-          and(gte(orders.createdAt, todayStart), eq(orders.paymentStatus, "paid"))
+          and(
+            gte(orders.createdAt, todayStart),
+            inArray(orders.paymentStatus, ["paid", "pending"])
+          )
         ),
         db.select().from(orders).where(
           and(
             gte(orders.createdAt, yesterdayStart),
             lt(orders.createdAt, todayStart),
-            eq(orders.paymentStatus, "paid")
+            inArray(orders.paymentStatus, ["paid", "pending"])
           )
         ),
         db.select().from(orders).where(
-          and(gte(orders.createdAt, weekStart), eq(orders.paymentStatus, "paid"))
+          and(
+            gte(orders.createdAt, weekStart),
+            inArray(orders.paymentStatus, ["paid", "pending"])
+          )
         ),
         db.select().from(orders).orderBy(desc(orders.createdAt)).limit(10),
         db.select({
@@ -64,7 +70,12 @@ export const analyticsRouter = createTRPCRouter({
       const rows = await db
         .select()
         .from(orders)
-        .where(and(gte(orders.createdAt, start), eq(orders.paymentStatus, "paid")));
+        .where(
+          and(
+            gte(orders.createdAt, start),
+            inArray(orders.paymentStatus, ["paid", "pending"])
+          )
+        );
 
       const byDate = new Map<string, number>();
       rows.forEach((o) => {
@@ -108,7 +119,7 @@ export const analyticsRouter = createTRPCRouter({
     const paidOrders = await db
       .select({ total: orders.total })
       .from(orders)
-      .where(eq(orders.paymentStatus, "paid"));
+      .where(inArray(orders.paymentStatus, ["paid", "pending"]));
     const revenue = paidOrders.reduce((s, o) => s + o.total, 0);
     return { revenue, expenses: 0, profit: revenue };
   }),
