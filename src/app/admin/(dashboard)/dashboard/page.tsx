@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { api } from "@/trpc/react";
 import { KPICard } from "@/components/admin/KPICard";
 import { RevenueChart } from "@/components/admin/RevenueChart";
@@ -10,11 +9,11 @@ import { LowStockAlerts } from "@/components/admin/LowStockAlerts";
 import { KPICardSkeleton } from "@/components/shared/skeletons/KPICardSkeleton";
 
 export default function AdminDashboardPage() {
-  const { data: stats, refetch: refetchStats } =
+  const { data: stats } =
     api.analytics.getDashboardStats.useQuery(undefined, {
       refetchInterval: 15000, // Auto-refetch every 15 seconds for real-time data
     });
-  const { data: revenueData, refetch: refetchRevenue } = api.analytics.getRevenue.useQuery(
+  const { data: revenueData } = api.analytics.getRevenue.useQuery(
     { period: "7d" },
     {
       refetchInterval: 15000, // Auto-refetch every 15 seconds

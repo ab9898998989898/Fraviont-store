@@ -42,47 +42,6 @@ interface MockDatabase {
 }
 
 // Simulate the unfixed create mutation behavior
-function unfixedCreateProduct(
-  db: MockDatabase,
-  input: {
-    slug: string;
-    name: string;
-    price: number;
-    category: "perfumes" | "cosmetics" | "jewelry" | "gift_sets";
-    variants: Array<{
-      sku: string;
-      name: string;
-      price?: number;
-      stock: number;
-    }>;
-  }
-): Product {
-  const { variants, ...productData } = input;
-  
-  // Insert product
-  const product: Product = {
-    id: `product-${Date.now()}-${Math.random()}`,
-    ...productData,
-  };
-  db.products.push(product);
-  
-  // BUG: Variants are NOT being inserted (simulating the bug)
-  // The unfixed code might have a transaction issue or missing variant insertion
-  // For this exploration test, we simulate the bug by NOT inserting variants
-  
-  // FIXED CODE WOULD DO:
-  // if (variants.length > 0) {
-  //   variants.forEach((v) => {
-  //     db.variants.push({
-  //       id: `variant-${Date.now()}-${Math.random()}`,
-  //       productId: product.id,
-  //       ...v,
-  //     });
-  //   });
-  // }
-  
-  return product;
-}
 
 // Simulate the fixed create mutation behavior
 function fixedCreateProduct(
@@ -100,7 +59,8 @@ function fixedCreateProduct(
     }>;
   }
 ): Product {
-  const { variants, ...productData } = input;
+  const { ...productData } = input;
+  const variants = input.variants;
   
   // Insert product
   const product: Product = {

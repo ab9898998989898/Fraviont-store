@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
 import { Search } from "lucide-react";
 import { api } from "@/trpc/react";
 import { useDebounce } from "@/lib/hooks/useDebounce";

@@ -9,7 +9,6 @@ import { api } from "@/trpc/react";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { TableSkeleton } from "@/components/shared/skeletons/TableSkeleton";
-import { StatusBadge } from "@/components/shared/StatusBadge";
 
 const ITEMS_PER_PAGE = 20;
 

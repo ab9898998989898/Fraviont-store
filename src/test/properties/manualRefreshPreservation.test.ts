@@ -497,7 +497,7 @@ describe("Manual refresh preservation - pure function properties (Requirements 3
     fc.assert(
       fc.property(
         fc.constantFrom(...pageSources),
-        ({ name, source }) => {
+        ({ source }) => {
           // Each page must use either server-side tRPC or client-side useQuery
           const usesServerFetch = usesServerTrpc(source);
           const usesClientFetch = usesReactTrpc(source) && hasUseQueryCall(source);

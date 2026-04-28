@@ -93,7 +93,7 @@ describe("Admin layout - authentication preservation (Requirement 3.4)", () => {
     fc.assert(
       fc.property(
         fc.constantFrom(...ADMIN_ROUTES),
-        (_route) => {
+        () => {
           // The layout is shared across all routes via the (dashboard) route group.
           // We verify the layout has exactly one redirect to /admin/login,
           // meaning every route under (dashboard) is protected by the same guard.

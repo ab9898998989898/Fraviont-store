@@ -36,7 +36,6 @@ export function Navigation() {
   const navRef = useRef<HTMLElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const linkRefs = useRef<HTMLAnchorElement[]>([]);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -50,7 +49,6 @@ export function Navigation() {
   );
 
   function handleMenuOpen() {
-    setMenuOpen(true);
     if (overlayRef.current && linkRefs.current.length > 0) {
       openMobileMenu(overlayRef.current, linkRefs.current);
     }
@@ -60,7 +58,6 @@ export function Navigation() {
     if (overlayRef.current) {
       gsap.to(overlayRef.current, { opacity: 0, pointerEvents: "none", duration: 0.3 });
     }
-    setMenuOpen(false);
   }
 
   return (

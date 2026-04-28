@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, adminProcedure } from "@/server/api/trpc";
 import { storeSettings, users, orders, orderItems, customers, inventoryLogs } from "@/server/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/server/db";
 import bcrypt from "bcryptjs";
 import { TRPCError } from "@trpc/server";

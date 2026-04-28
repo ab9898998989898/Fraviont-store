@@ -38,7 +38,6 @@ export function OrderConfirmation({
   orderNumber,
   customerName,
   items,
-  subtotal,
   total,
   estimatedDelivery = "3–5 business days",
 }: OrderConfirmationProps) {

@@ -8,7 +8,7 @@ import { redis } from "@/lib/redis/client";
 
 import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 
-async function handler(req: NextRequest) {
+async function handler(_req: NextRequest) {
   try {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());

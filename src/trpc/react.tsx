@@ -14,16 +14,16 @@ export const api = createTRPCReact<AppRouter>();
 function makeQueryClient() {
   return new QueryClient({
     queryCache: new QueryCache({
-      onError: (error: any) => {
-        if (error?.message === "SESSION_INVALIDATED") {
+      onError: (error: unknown) => {
+        if (error instanceof Error && error.message === "SESSION_INVALIDATED") {
           toast.error("Session invalidated by another login");
           void signOut({ callbackUrl: "/admin/login" });
         }
       },
     }),
     mutationCache: new MutationCache({
-      onError: (error: any) => {
-        if (error?.message === "SESSION_INVALIDATED") {
+      onError: (error: unknown) => {
+        if (error instanceof Error && error.message === "SESSION_INVALIDATED") {
           toast.error("Session invalidated by another login");
           void signOut({ callbackUrl: "/admin/login" });
         }
@@ -32,8 +32,8 @@ function makeQueryClient() {
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000,
-        retry: (failureCount, error: any) => {
-          if (error?.message === "SESSION_INVALIDATED") return false;
+        retry: (failureCount, error: unknown) => {
+          if (error instanceof Error && error.message === "SESSION_INVALIDATED") return false;
           return failureCount < 3;
         },
       },

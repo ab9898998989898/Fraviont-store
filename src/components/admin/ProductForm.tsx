@@ -274,7 +274,7 @@ export function ProductForm({ product }: ProductFormProps) {
                 const files = e.target.files;
                 if (!files) return;
                 
-                const currentImages = watch("images") ?? [];
+                
                 
                 Array.from(files).forEach((file) => {
                   const reader = new FileReader();

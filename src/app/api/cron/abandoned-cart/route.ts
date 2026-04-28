@@ -9,7 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 
-async function handler(req: NextRequest) {
+async function handler(_req: NextRequest) {
   try {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 

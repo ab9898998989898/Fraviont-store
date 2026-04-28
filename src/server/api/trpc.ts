@@ -55,7 +55,8 @@ export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
     .limit(1);
 
   // If the IDs don't match, it means another login happened
-  if (!user || user.activeSessionId !== (ctx.session.user as any).activeSessionId) {
+  const sessionUser = ctx.session.user as { id: string; role: string; activeSessionId?: string };
+  if (!user || user.activeSessionId !== sessionUser.activeSessionId) {
     throw new TRPCError({ 
       code: "UNAUTHORIZED", 
       message: "SESSION_INVALIDATED" 
