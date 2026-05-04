@@ -27,6 +27,14 @@ export function NewsletterSection() {
     subscribeMutation.mutate({ email: email.trim() });
   }
 
+  function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setEmail(e.target.value);
+    // Clear the error message immediately when the user starts typing again
+    if (status === "error") {
+      setStatus("idle");
+    }
+  }
+
   return (
     <section className="py-24 px-8">
       <div className="max-w-xl mx-auto text-center">
@@ -48,7 +56,7 @@ export function NewsletterSection() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               placeholder="Your email address"
               required
               className="flex-1 bg-transparent border border-iron text-ivory text-sm font-sans font-light px-4 py-3 placeholder:text-ash focus:outline-none focus:border-gold-antique transition-colors"

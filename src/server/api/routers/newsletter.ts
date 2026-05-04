@@ -22,14 +22,19 @@ export const newsletterRouter = createTRPCRouter({
           // Already subscribed — return success silently
           return { success: true, alreadySubscribed: true };
         }
-        throw err;
+        
+        // Prevent leaking DB internals to the client
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to process subscription.",
+        });
       }
 
-      // 2. Send welcome email via Resend (best-effort — don't fail the subscription)
+      // 2. Send welcome email via Resend (best-effort)
       try {
         const RESEND_API_KEY = process.env.RESEND_API_KEY;
         if (RESEND_API_KEY) {
-          await fetch("https://api.resend.com/emails", {
+          const res = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
               Authorization: `Bearer ${RESEND_API_KEY}`,
@@ -61,10 +66,16 @@ export const newsletterRouter = createTRPCRouter({
               `,
             }),
           });
+
+          // Fetch doesn't throw on 400/500 level errors, so we handle it manually
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.error("[Newsletter] Resend API rejected payload:", errorText);
+          }
         }
       } catch (emailErr) {
-        console.error("[Newsletter] Failed to send welcome email:", emailErr);
-        // Don't throw — subscription was already saved
+        // This only catches network-level failures (e.g. DNS issues)
+        console.error("[Newsletter] Network error sending welcome email:", emailErr);
       }
 
       return { success: true, alreadySubscribed: false };
