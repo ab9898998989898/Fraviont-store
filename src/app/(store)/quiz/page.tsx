@@ -42,6 +42,9 @@ export default function QuizPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const stepRef = useRef<HTMLDivElement>(null);
 
+  // Fetch real product names from the store
+  const { data: productData } = api.ai.getProductNames.useQuery();
+
   const generateProfileMutation = api.ai.generateProfile.useMutation({
     onSuccess: (data) => {
       setResult({ profile: data.profile, recommendations: data.recommendations });
@@ -70,10 +73,15 @@ export default function QuizPage() {
     if (step < QUIZ_STEPS.length - 1) {
       animateStepTransition("forward", () => setStep((s) => s + 1));
     } else {
-      // Submit quiz
+      // Use real product names from the DB, with a fallback in case query hasn't loaded
+      const productNames =
+        productData && productData.length > 0
+          ? productData.map((p) => p.name)
+          : ["Fraviont Oud Noir", "Rose Absolue", "Citrus Bloom", "Amber Dusk", "Cedar & Vetiver"];
+
       generateProfileMutation.mutate({
         answers: newAnswers,
-        products: ["Fraviont Oud Noir", "Rose Absolue", "Citrus Bloom", "Amber Dusk", "Cedar & Vetiver"],
+        products: productNames,
       });
       animateStepTransition("forward", () => setStep(QUIZ_STEPS.length));
     }

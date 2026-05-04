@@ -212,6 +212,14 @@ export const storeSettings = pgTable("store_settings", {
   updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
 });
 
+// ─── Newsletter ────────────────────────────────────────────────────────────────
+
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  id:          uuid("id").primaryKey().defaultRandom(),
+  email:       text("email").unique().notNull(),
+  subscribedAt: timestamp("subscribed_at").defaultNow(),
+});
+
 // ─── TypeScript Types ─────────────────────────────────────────────────────────
 
 export type ScentNotes = {

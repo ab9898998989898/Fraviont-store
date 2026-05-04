@@ -27,15 +27,48 @@ export const aiRouter = createTRPCRouter({
         });
       }
 
+      // Fetch active products to ground Sophia in real store inventory
+      const activeProducts = await db
+        .select({
+          name: products.name,
+          category: products.category,
+          shortDescription: products.shortDescription,
+          price: products.price,
+        })
+        .from(products)
+        .where(eq(products.isActive, true))
+        .limit(50);
+
+      const productContext = activeProducts.length > 0
+        ? `\n\nOur current collection (ONLY recommend products from this list):\n${activeProducts
+            .map(
+              (p) =>
+                `- ${p.name} (${p.category}${
+                  p.shortDescription ? `: ${p.shortDescription}` : ""
+                }) — R${(p.price / 100).toFixed(2)}`
+            )
+            .join("\n")}`
+        : "";
+
       const reply = await callAI({
         model: "anthropic/claude-3-5-haiku",
-        system: SOPHIA_SYSTEM_PROMPT,
+        system: SOPHIA_SYSTEM_PROMPT + productContext,
         messages: [{ role: "user", content: input.message }],
         max_tokens: 500,
       });
 
       return { reply };
     }),
+
+  // Returns active product names for the quiz & any other consumer
+  getProductNames: publicProcedure.query(async () => {
+    const activeProducts = await db
+      .select({ name: products.name, category: products.category })
+      .from(products)
+      .where(eq(products.isActive, true))
+      .limit(50);
+    return activeProducts;
+  }),
 
   generateDescription: adminProcedure
     .input(z.object({ productId: z.string().uuid() }))
