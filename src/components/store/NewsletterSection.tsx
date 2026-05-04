@@ -56,6 +56,7 @@ export function NewsletterSection() {
             <input
               type="email"
               value={email}
+              name="email"
               onChange={handleEmailChange}
               placeholder="Your email address"
               required
