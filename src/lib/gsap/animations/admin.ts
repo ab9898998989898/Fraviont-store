@@ -19,7 +19,6 @@ export function animateKPICards(cards: HTMLElement[]) {
 }
 
 export function animateChartReveal(chartWrapper: HTMLElement) {
-  const mainElement = chartWrapper.closest("main");
   gsap.fromTo(
     chartWrapper,
     { opacity: 0, clipPath: "inset(0 100% 0 0)" },
@@ -28,16 +27,6 @@ export function animateChartReveal(chartWrapper: HTMLElement) {
       clipPath: "inset(0 0% 0 0)",
       duration: 1.2,
       ease: "power2.inOut",
-      scrollTrigger: mainElement
-        ? {
-            trigger: chartWrapper,
-            start: "top 95%",
-            scroller: mainElement,
-          }
-        : {
-            trigger: chartWrapper,
-            start: "top 95%",
-          },
     }
   );
 }
