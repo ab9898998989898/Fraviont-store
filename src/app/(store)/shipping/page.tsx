@@ -6,7 +6,7 @@ import { gsap } from "@/lib/gsap/config";
 import { Package, Globe, Clock, Shield, MapPin, CheckCircle2 } from "lucide-react";
 
 const SECTIONS = [
-  { icon: Package, title: "Domestic Shipping (South Africa)", content: "We offer complimentary standard shipping on all orders over R1,500. Standard delivery securely transports your items via our trusted courier partners and typically takes 3–5 business days to major centres. For urgent requests, express delivery (1–2 business days) is available for a flat rate of R150." },
+  { icon: Package, title: "Domestic Shipping (South Africa)", content: "We offer complimentary standard shipping on all orders over R3,000. Standard delivery securely transports your items via our trusted courier partners and typically takes 3–5 business days to major centres. For urgent requests, express delivery (1–2 business days) is available for a flat rate of R150." },
   { icon: Globe, title: "International Shipping", content: "Fraviont ships to select international destinations across North America, Europe, and the Middle East. International delivery typically requires 7–14 business days, depending on customs processing. Shipping rates and estimated timelines are calculated dynamically at checkout based on destination and parcel weight." },
   { icon: Clock, title: "Order Processing Time", content: "Our atelier processes all orders within 24 hours of placement (excluding weekends and public holidays). During launch weeks or peak holiday seasons, please allow an additional 24-48 hours for dispatch. As soon as your package leaves our facility, you will receive an email containing detailed tracking information." },
 ];

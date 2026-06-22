@@ -16,7 +16,7 @@ const CheckoutFormSchema = z.object({
   city: z.string().min(1, "City required"),
   province: z.string().min(1, "Province required"),
   postalCode: z.string().min(4, "Postal code required"),
-  paymentMethod: z.enum(["payfast", "cod"]).default("payfast"),
+  paymentMethod: z.enum(["payfast", "cod"]).default("cod"),
 });
 
 type CheckoutFormData = z.infer<typeof CheckoutFormSchema>;
@@ -49,7 +49,7 @@ export default function CheckoutPage() {
     watch,
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(CheckoutFormSchema),
-    defaultValues: { paymentMethod: "payfast" },
+    defaultValues: { paymentMethod: "cod" },
   });
 
   const paymentMethod = watch("paymentMethod");
@@ -229,14 +229,15 @@ export default function CheckoutPage() {
               Payment Method
             </h2>
             <div className="flex gap-6">
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2 cursor-not-allowed opacity-55">
                 <input
                   type="radio"
                   value="payfast"
+                  disabled
                   {...register("paymentMethod")}
                   className="accent-gold-warm"
                 />
-                <span className="text-parchment text-sm font-sans">PayFast (Credit/Debit Card)</span>
+                <span className="text-parchment text-sm font-sans">PayFast (Credit/Debit Card) - Not Available</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input

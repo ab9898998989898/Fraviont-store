@@ -83,7 +83,7 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
               {
                 title: "Shipping & Returns",
                 content:
-                  "Free shipping on orders over R500. Returns accepted within 14 days of delivery.",
+                  "Free shipping on orders over R3,000. Returns accepted within 14 days of delivery.",
               },
             ]
               .filter((s) => s.content)

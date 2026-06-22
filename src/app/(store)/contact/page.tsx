@@ -7,7 +7,7 @@ import { MapPin, Mail, Phone, Clock, Shield, Truck, Headphones } from "lucide-re
 
 const TRUST_BADGES = [
   { icon: Shield, label: "Secure Payments", sub: "SSL encrypted checkout" },
-  { icon: Truck, label: "Free Shipping", sub: "On orders over R1,500" },
+  { icon: Truck, label: "Free Shipping", sub: "On orders over R3,000" },
   { icon: Headphones, label: "Dedicated Support", sub: "Response within 24hrs" },
 ];
 

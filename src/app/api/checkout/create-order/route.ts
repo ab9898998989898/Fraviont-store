@@ -30,7 +30,7 @@ const CheckoutSchema = z.object({
       })
     )
     .min(1),
-  paymentMethod: z.enum(["payfast", "cod"]).default("payfast"),
+  paymentMethod: z.enum(["payfast", "cod"]).default("cod"),
 });
 
 export async function POST(req: NextRequest) {

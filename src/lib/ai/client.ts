@@ -8,7 +8,7 @@ interface AICallOptions {
 }
 
 export async function callAI({
-  model = "anthropic/claude-3-5-haiku",
+  model = "anthropic/claude-3.5-haiku",
   messages,
   system,
   temperature = 0.7,

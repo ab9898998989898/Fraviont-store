@@ -51,7 +51,7 @@ export const aiRouter = createTRPCRouter({
         : "";
 
       const reply = await callAI({
-        model: "anthropic/claude-3-5-haiku",
+        model: "anthropic/claude-3.5-haiku",
         system: SOPHIA_SYSTEM_PROMPT + productContext,
         messages: [{ role: "user", content: input.message }],
         max_tokens: 500,
@@ -86,7 +86,7 @@ export const aiRouter = createTRPCRouter({
       if (!product) throw new TRPCError({ code: "NOT_FOUND", message: "Product not found" });
 
       const description = await callAI({
-        model: "anthropic/claude-3-5-sonnet",
+        model: "anthropic/claude-3.5-sonnet",
         system: buildDescriptionPrompt(product),
         messages: [{ role: "user", content: "Write the product description now." }],
         max_tokens: 400,
@@ -128,7 +128,7 @@ export const aiRouter = createTRPCRouter({
     )
     .mutation(async ({ input }) => {
       const raw = await callAI({
-        model: "anthropic/claude-3-5-haiku",
+        model: "anthropic/claude-3.5-haiku",
         system: buildProfilePrompt(input.answers, input.products),
         messages: [{ role: "user", content: "Generate my scent profile." }],
         max_tokens: 600,

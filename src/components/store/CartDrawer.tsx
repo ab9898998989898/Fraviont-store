@@ -10,7 +10,7 @@ import { revealStagger } from "@/lib/gsap/animations/scrollReveal";
 import { useCartStore } from "@/lib/stores/cart.store";
 import { formatPrice } from "@/lib/utils";
 
-const FREE_SHIPPING_THRESHOLD = 50000; // R500 in cents
+const FREE_SHIPPING_THRESHOLD = 300000; // R3000 in cents
 
 interface CartDrawerProps {
   open: boolean;
